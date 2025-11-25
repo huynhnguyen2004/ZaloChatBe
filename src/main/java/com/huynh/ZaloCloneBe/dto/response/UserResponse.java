@@ -1,0 +1,24 @@
+package com.huynh.ZaloCloneBe.dto.response;
+
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.Date;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class UserResponse {
+    private String firstname;
+    private String phone;
+    private String avatarUrl;
+    private String lastName;
+    private boolean online;
+    private Date createdAt;
+    private String role;
+}
+
