@@ -5,10 +5,7 @@ import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
 import com.huynh.ZaloCloneBe.dto.response.UserResponse;
 import com.huynh.ZaloCloneBe.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
@@ -23,6 +20,15 @@ public class UserController {
                .result(service.createUser(request))
                .build();
    }
+    @GetMapping("/me")
+    public ApiResponse<UserResponse> getCurrentUser(@RequestHeader("Authorization") String token) throws Exception {
+        UserResponse userResponse = service.getCurrentUser(token);
 
+        return ApiResponse.<UserResponse>builder()
+                .code(1001)
+                .messenge("Lấy thông tin người dùng hiện tại thành công")
+                .result(userResponse)
+                .build();
+    }
 
 }

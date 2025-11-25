@@ -7,6 +7,7 @@ import com.huynh.ZaloCloneBe.exception.AppException;
 import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import com.huynh.ZaloCloneBe.mapper.UserMapper;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
+import com.nimbusds.jwt.SignedJWT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,5 +32,20 @@ public class UserService {
         user.setRole("Customer");
         User saved = repository.save(user);
         return mapper.toDto(saved);
+    }
+    public UserResponse getCurrentUser(String token) throws Exception {
+
+        String jwt = token.substring(7);
+
+
+        SignedJWT signedJWT = SignedJWT.parse(jwt);
+        String phone = signedJWT.getJWTClaimsSet().getSubject();
+
+
+        User user = repository.findByPhone(phone)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+
+
+        return mapper.toDto(user);
     }
 }
