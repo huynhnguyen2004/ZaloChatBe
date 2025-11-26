@@ -1,6 +1,8 @@
 package com.huynh.ZaloCloneBe.controller;
 
+import com.huynh.ZaloCloneBe.dto.request.AcceptedFriendRequest;
 import com.huynh.ZaloCloneBe.dto.request.SendFriendRequest;
+import com.huynh.ZaloCloneBe.dto.response.AcceptedFriendResponse;
 import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
 import com.huynh.ZaloCloneBe.dto.response.SendFriendResponse;
 import com.huynh.ZaloCloneBe.service.FriendRequestService;
@@ -23,6 +25,14 @@ public class FriendRequestController {
                 .code(1001)
                 .messenge("gui loi moi thanh cong")
                 .result(service.sendRequest(request))
+                .build();
+    }
+    @PostMapping("/accepted")
+    public ApiResponse<AcceptedFriendResponse> acceptedFriend(@RequestBody AcceptedFriendRequest request) {
+        return ApiResponse.<AcceptedFriendResponse>builder()
+                .code(1001)
+                .messenge("chap nhan ban be thanh cong")
+                .result(service.acceptedFriend(request.getId()))
                 .build();
     }
 
