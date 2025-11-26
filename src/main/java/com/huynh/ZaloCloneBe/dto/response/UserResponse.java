@@ -13,6 +13,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Data
 public class UserResponse {
+    private Long id;
     private String firstname;
     private String phone;
     private String avatarUrl;
