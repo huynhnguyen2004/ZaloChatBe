@@ -12,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -47,5 +49,13 @@ public class UserService {
 
 
         return mapper.toDto(user);
+    }
+    public List<UserResponse>search(String key){
+        List<User> lst=repository.search(key);
+        List<UserResponse> responseList=new ArrayList<>();
+        for(User u:lst){
+            responseList.add(mapper.toDto(u));
+        }
+        return responseList;
     }
 }

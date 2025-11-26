@@ -7,6 +7,8 @@ import com.huynh.ZaloCloneBe.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
@@ -29,6 +31,14 @@ public class UserController {
                 .messenge("Lấy thông tin người dùng hiện tại thành công")
                 .result(userResponse)
                 .build();
+    }
+    @GetMapping("/search")
+    public ApiResponse<List<UserResponse>>search(@RequestParam("key") String key){
+       return ApiResponse.<List<UserResponse>>builder()
+               .code(1001)
+               .messenge("Tim kiem thanh cong")
+               .result(service.search(key))
+               .build();
     }
 
 }

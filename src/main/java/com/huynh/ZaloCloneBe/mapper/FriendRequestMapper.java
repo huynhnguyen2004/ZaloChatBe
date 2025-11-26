@@ -17,8 +17,8 @@ public interface FriendRequestMapper {
     FriendRequest toEntity(SendFriendRequest request);
     @Mapping(target ="senderId",source = "sender.id")
     @Mapping(target ="receiverId",source = "receiver.id")
-    @Mapping(target ="senderName",source = "sender.lastName")
-    @Mapping(target ="receiverName",source = "receiver.lastName")
+    @Mapping(target ="senderName",source = "sender.lastname")
+    @Mapping(target ="receiverName",source = "receiver.lastname")
     @Mapping(target ="createdAt",source = "createdAt")
     @Mapping(target ="status",source = "status")
     SendFriendResponse toDto(FriendRequest friendRequest);

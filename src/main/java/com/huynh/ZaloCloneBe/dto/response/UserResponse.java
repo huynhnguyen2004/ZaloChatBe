@@ -17,7 +17,7 @@ public class UserResponse {
     private String firstname;
     private String phone;
     private String avatarUrl;
-    private String lastName;
+    private String lastname;
     private boolean online;
     private Date createdAt;
     private String role;

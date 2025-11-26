@@ -21,7 +21,7 @@ public class User {
     private String password;
     private String phone;
     private String avatarUrl;
-    private String lastName;
+    private String lastname;
     private boolean online;
     private Date createdAt;
     private String role;
