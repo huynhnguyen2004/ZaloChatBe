@@ -3,15 +3,13 @@ package com.huynh.ZaloCloneBe.controller;
 import com.huynh.ZaloCloneBe.dto.request.AuthenRequest;
 import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
 import com.huynh.ZaloCloneBe.dto.response.AuthenResponse;
+import com.huynh.ZaloCloneBe.dto.response.UserResponse;
 import com.huynh.ZaloCloneBe.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
-    @RestController
+@RestController
     @RequestMapping("/api/auth")
     public class AuthenController {
         @Autowired
@@ -25,6 +23,16 @@ import org.springframework.web.bind.annotation.RestController;
                     .result(response)
                     .build();
         }
+    @PutMapping("/logout/{id}")
+    public ApiResponse<UserResponse> logout(@PathVariable Long id) throws Exception{
+        UserResponse result = authenticationService.updataStatus(id);
+        return ApiResponse.<UserResponse>builder()
+                .code(1001)
+                .messenge("cap nhat offline thanh cong")
+                .result(result)
+                .build();
+    }
+
 
 
 

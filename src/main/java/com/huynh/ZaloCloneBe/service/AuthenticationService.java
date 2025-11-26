@@ -34,6 +34,12 @@ public class AuthenticationService {
     private static final String SECRET = "Bgtov/9iSc1HWhK6xD/VnqXcMbcEiRl/vNxT+nLhTICOzNkeY5qu+8eE6fjv7fDh";
 
 
+    public UserResponse updataStatus(Long id) throws Exception{
+        User user=repository.findById(id).orElseThrow(()->new AppException(ErrorCode.USER_NOTFOUND));
+        user.setOnline(false);
+        User saved=repository.save(user);
+        return userMapper.toDto(saved);
+    }
     public AuthenResponse login(AuthenRequest request) throws Exception {
         String phone = request.getPhone();
 
@@ -43,8 +49,9 @@ public class AuthenticationService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
-
-        UserResponse userResponse = userMapper.toDto(user);
+        user.setOnline(true);
+        User saved=repository.save(user);
+        UserResponse userResponse = userMapper.toDto(saved);
         String token = generateToken(user.getPhone());
 
         return AuthenResponse.builder()
