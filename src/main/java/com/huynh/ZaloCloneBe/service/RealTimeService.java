@@ -17,4 +17,9 @@ public class RealTimeService {
     public void sendAcceptRealtime(Long senderId, Object data) {
         messaging.convertAndSend("/topic/friend-accept/" + senderId, data);
     }
+    public void sendFriendUpdateRealtime(Long userId, Object data) {
+        messaging.convertAndSend("/topic/friend-list/" + userId, data);
+    }
+
+
 }

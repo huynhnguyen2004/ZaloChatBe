@@ -2,6 +2,7 @@ package com.huynh.ZaloCloneBe.service;
 
 import com.huynh.ZaloCloneBe.dto.request.SendFriendRequest;
 import com.huynh.ZaloCloneBe.dto.response.AcceptedFriendResponse;
+import com.huynh.ZaloCloneBe.dto.response.FriendResponse;
 import com.huynh.ZaloCloneBe.dto.response.ListSendFriendResponse;
 import com.huynh.ZaloCloneBe.dto.response.SendFriendResponse;
 import com.huynh.ZaloCloneBe.entity.Friend;
@@ -92,7 +93,6 @@ public class FriendRequestService {
         fr.setStatus(StatusRequest.ACCEPTED);
         repository.save(fr);
 
-
         User userA = fr.getSender();
         User userB = fr.getReceiver();
 
@@ -100,11 +100,9 @@ public class FriendRequestService {
         User user1 = (userA.getId() < userB.getId()) ? userA : userB;
         User user2 = (userA.getId() < userB.getId()) ? userB : userA;
 
-
         if (friendRepository.existsByUser1IdAndUser2Id(user1.getId(), user2.getId())) {
             throw new AppException(ErrorCode.FRIEND_ALREADY);
         }
-
 
         Friend friend = new Friend();
         friend.setUser1(user1);
@@ -112,17 +110,40 @@ public class FriendRequestService {
         friend.setCreatedAt(new Date());
         friendRepository.save(friend);
 
-        AcceptedFriendResponse response = AcceptedFriendResponse.builder()
+
+        FriendResponse resForA = FriendResponse.builder()
+                .id(friend.getId())
+                .friendId(userB.getId())
+                .friendName(userB.getLastname())
+                .phone(userB.getPhone())
+                .avatarUrl(userB.getAvatarUrl())
+                .online(userB.isOnline())
+                .build();
+
+        // 🔥 TẠO DTO FRIEND CHO NGƯỜI NHẬN (B)
+        FriendResponse resForB = FriendResponse.builder()
+                .id(friend.getId())
+                .friendId(userA.getId())
+                .friendName(userA.getLastname())
+                .phone(userA.getPhone())
+                .avatarUrl(userA.getAvatarUrl())
+                .online(userA.isOnline())
+                .build();
+
+
+        realTimeService.sendAcceptRealtime(userA.getId(), resForA);
+        realTimeService.sendFriendUpdateRealtime(userA.getId(), resForA);
+
+
+        realTimeService.sendAcceptRealtime(userB.getId(), resForB);
+        realTimeService.sendFriendUpdateRealtime(userB.getId(), resForB);
+
+        return AcceptedFriendResponse.builder()
                 .senderId(fr.getSender().getId())
                 .receiverId(fr.getReceiver().getId())
                 .status(fr.getStatus())
                 .createdAt(friend.getCreatedAt())
                 .build();
-
-
-        realTimeService.sendAcceptRealtime(fr.getSender().getId(), response);
-
-        return response;
     }
 
 
