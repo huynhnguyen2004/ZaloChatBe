@@ -14,25 +14,35 @@ import java.util.List;
 
 @Configuration
 public class SecurityConfig {
+
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/ws/**").permitAll()    // 🔥 Cho phép WebSocket endpoint
                         .anyRequest().permitAll()
                 );
+
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:3000"));
+
+        // ❗ Không dùng wildcard nếu credentials = true
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://192.168.1.112:3000"
+        ));
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -41,5 +51,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
 }

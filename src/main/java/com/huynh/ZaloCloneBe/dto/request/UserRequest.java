@@ -13,5 +13,5 @@ public class UserRequest {
     private String phone;
     private String password;
     private String firstname;
-    private String lastName;
+    private String lastname;
 }
