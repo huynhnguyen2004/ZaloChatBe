@@ -3,6 +3,7 @@ package com.huynh.ZaloCloneBe.repository;
 import com.huynh.ZaloCloneBe.entity.FriendRequest;
 import com.huynh.ZaloCloneBe.entity.StatusRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,7 +12,6 @@ import java.util.List;
 public interface FriendRequestRepository extends JpaRepository<FriendRequest, Long> {
 
     boolean existsBySenderIdAndReceiverId(Long senderId, Long receiverId);
-
     List<FriendRequest> findByReceiverIdAndStatus(Long receiverId, StatusRequest status);
 
     List<FriendRequest> findBySenderIdAndStatus(Long senderId, StatusRequest status);

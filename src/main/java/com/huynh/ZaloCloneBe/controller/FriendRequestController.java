@@ -4,16 +4,17 @@ import com.huynh.ZaloCloneBe.dto.request.AcceptedFriendRequest;
 import com.huynh.ZaloCloneBe.dto.request.SendFriendRequest;
 import com.huynh.ZaloCloneBe.dto.response.AcceptedFriendResponse;
 import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
+import com.huynh.ZaloCloneBe.dto.response.ListSendFriendResponse;
 import com.huynh.ZaloCloneBe.dto.response.SendFriendResponse;
 import com.huynh.ZaloCloneBe.service.FriendRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.repository.query.Param;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/friend")
+@RequestMapping("/api/friendrequest")
 
 public class FriendRequestController {
     @Autowired
@@ -33,6 +34,14 @@ public class FriendRequestController {
                 .code(1001)
                 .messenge("chap nhan ban be thanh cong")
                 .result(service.acceptedFriend(request.getId()))
+                .build();
+    }
+    @GetMapping
+    public ApiResponse<List<ListSendFriendResponse>>getAllFriendRequest(@RequestParam("id") Long id){
+        return ApiResponse.<List<ListSendFriendResponse>>builder()
+                .code(1001)
+                .messenge("Lay danh sach gui loi moi thanh cong")
+                .result(service.getAllSendFriend(id))
                 .build();
     }
 

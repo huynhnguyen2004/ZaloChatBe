@@ -2,6 +2,7 @@ package com.huynh.ZaloCloneBe.service;
 
 import com.huynh.ZaloCloneBe.dto.request.SendFriendRequest;
 import com.huynh.ZaloCloneBe.dto.response.AcceptedFriendResponse;
+import com.huynh.ZaloCloneBe.dto.response.ListSendFriendResponse;
 import com.huynh.ZaloCloneBe.dto.response.SendFriendResponse;
 import com.huynh.ZaloCloneBe.entity.Friend;
 import com.huynh.ZaloCloneBe.entity.FriendRequest;
@@ -16,7 +17,9 @@ import com.huynh.ZaloCloneBe.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Service
 
@@ -28,15 +31,31 @@ public class FriendRequestService {
     @Autowired
     private FriendRequestMapper mapper;
     @Autowired
-    private  RealTimeService realTimeService;
+    private RealTimeService realTimeService;
     @Autowired
     private FriendRepository friendRepository;
+
+    public List<ListSendFriendResponse> getAllSendFriend(Long id) {
+        List<FriendRequest> requests = repository.findByReceiverIdAndStatus(id, StatusRequest.PENDING);
+        List<ListSendFriendResponse> responseList=new ArrayList<>();
+        for(FriendRequest friendRequest:requests){
+            responseList.add(mapper.toDtoList(friendRequest));
+        }
+        return responseList;
+    }
+
     public SendFriendResponse sendRequest(SendFriendRequest request) {
 
+        if (friendRepository.existsByUser1IdAndUser2Id(request.getSenderId(), request.getReceiverId())) {
+            throw new AppException(ErrorCode.FRIEND_ALREADY);
+        }
         if (repository.existsBySenderIdAndReceiverId(request.getSenderId(), request.getReceiverId())) {
             throw new AppException(ErrorCode.SEND_REQUEST_ERROR);
         }
-        if (request.getSenderId().equals( request.getReceiverId())) {
+        if (repository.existsBySenderIdAndReceiverId(request.getReceiverId(), request.getSenderId())) {
+            throw new AppException(ErrorCode.SEND_REQUEST_ERROR);
+        }
+        if (request.getSenderId().equals(request.getReceiverId())) {
             throw new AppException(ErrorCode.REQUEST_FRIEND_ERROR);
         }
 
@@ -60,6 +79,7 @@ public class FriendRequestService {
 
         return response;
     }
+
     public AcceptedFriendResponse acceptedFriend(Long id) {
 
         FriendRequest fr = repository.findById(id)
@@ -104,7 +124,6 @@ public class FriendRequestService {
 
         return response;
     }
-
 
 
 }
