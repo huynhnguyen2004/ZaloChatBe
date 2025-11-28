@@ -1,11 +1,13 @@
 package com.huynh.ZaloCloneBe.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -15,6 +17,8 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
+    @Autowired
+    private JwtTokenFilter jwtTokenFilter;
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -30,6 +34,7 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 );
 
+        http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -38,10 +43,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // ❗ Không dùng wildcard nếu credentials = true
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",
-                "http://192.168.1.112:3000"
-        ));
+        configuration.addAllowedOriginPattern("*");
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));

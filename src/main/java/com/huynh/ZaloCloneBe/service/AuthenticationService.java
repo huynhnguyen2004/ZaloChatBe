@@ -70,7 +70,7 @@ public class AuthenticationService {
         JWTClaimsSet payload = new JWTClaimsSet.Builder()
                 .subject(phone)
                 .issueTime(new Date())
-                .expirationTime(new Date(System.currentTimeMillis() + 3600 * 1000))
+                .expirationTime(new Date(System.currentTimeMillis() + 3600 * 100))
                 .build();
 
         SignedJWT signedJWT = new SignedJWT(jwsHeader, payload);
