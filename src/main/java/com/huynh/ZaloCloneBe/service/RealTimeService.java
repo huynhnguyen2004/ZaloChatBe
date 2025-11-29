@@ -20,6 +20,12 @@ public class RealTimeService {
     public void sendFriendUpdateRealtime(Long userId, Object data) {
         messaging.convertAndSend("/topic/friend-list/" + userId, data);
     }
+    public void sendMessageToUser(Long receiverId, Object data) {
+        messaging.convertAndSend("/topic/chat/" + receiverId, data);
+    }
+    public void sendMessageToSender(Long senderId, Object data) {
+        messaging.convertAndSend("/topic/chat-self/" + senderId, data);
+    }
 
 
 }
