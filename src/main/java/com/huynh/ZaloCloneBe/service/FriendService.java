@@ -3,6 +3,8 @@ package com.huynh.ZaloCloneBe.service;
 import com.huynh.ZaloCloneBe.dto.response.FriendResponse;
 import com.huynh.ZaloCloneBe.entity.Friend;
 import com.huynh.ZaloCloneBe.entity.User;
+import com.huynh.ZaloCloneBe.exception.AppException;
+import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import com.huynh.ZaloCloneBe.repository.FriendRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,5 +38,14 @@ public class FriendService {
                             .build();
                 })
                 .toList();
+    }
+   public void unFriend(Long user1Id,Long user2Id){
+        boolean isFriend= friendRepository.existsByUser1IdAndUser2Id(user1Id, user2Id);
+        if(!isFriend){
+            throw new AppException(ErrorCode.FRIEND_notfound);
+        }else{
+            friendRepository.unFriend(user1Id, user2Id);
+        }
+
     }
 }
