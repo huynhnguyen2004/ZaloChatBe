@@ -15,16 +15,22 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
 
     @Query("SELECT f FROM Friend f WHERE f.user1.id = :userId OR f.user2.id = :userId")
     List<Friend> findFriends(@Param("userId") Long userId);
-    boolean existsByUser1IdAndUser2Id(Long user1, Long user2);
+
+    @Query("""
+            SELECT COUNT(f) > 0 FROM Friend f
+            WHERE (f.user1.id = :a AND f.user2.id = :b)
+               OR (f.user1.id = :b AND f.user2.id = :a)
+            """)
+    boolean existsFriend(@Param("a") Long a, @Param("b") Long b);
+
     @Transactional
     @Modifying
     @Query("""
-    Delete from Friend f
-    where (f.user1.id=:a and f.user2.id=:b)
-    or (f.user1.id=:b and f.user2.id=:a)
-""")
-    void unFriend(@Param("a")Long a,@Param("b") Long b);
-
+                Delete from Friend f
+                where (f.user1.id=:a and f.user2.id=:b)
+                or (f.user1.id=:b and f.user2.id=:a)
+            """)
+    void unFriend(@Param("a") Long a, @Param("b") Long b);
 
 
 }

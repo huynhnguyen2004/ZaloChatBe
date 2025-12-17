@@ -60,7 +60,7 @@ public class  UserService {
 
         List<SearchResponse>searchResponseList=new ArrayList<>();
         for(User u:lst){
-            boolean isFriend= friendRepository.existsByUser1IdAndUser2Id(userId,u.getId());
+            boolean isFriend= friendRepository.existsFriend(userId,u.getId());
              Long id=u.getId();
              String firstname=u.getFirstname();
              String phone=u.getPhone();

@@ -40,7 +40,7 @@ public class FriendService {
                 .toList();
     }
    public void unFriend(Long user1Id,Long user2Id){
-        boolean isFriend= friendRepository.existsByUser1IdAndUser2Id(user1Id, user2Id);
+        boolean isFriend= friendRepository.existsFriend(user1Id, user2Id);
         if(!isFriend){
             throw new AppException(ErrorCode.FRIEND_notfound);
         }else{

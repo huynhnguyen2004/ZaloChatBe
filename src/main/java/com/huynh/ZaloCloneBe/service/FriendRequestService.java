@@ -47,13 +47,13 @@ public class FriendRequestService {
 
     public SendFriendResponse sendRequest(SendFriendRequest request) {
 
-        if (friendRepository.existsByUser1IdAndUser2Id(request.getSenderId(), request.getReceiverId())) {
+        if (friendRepository.existsFriend(request.getSenderId(), request.getReceiverId())) {
             throw new AppException(ErrorCode.FRIEND_ALREADY);
         }
-        if (repository.existsBySenderIdAndReceiverId(request.getSenderId(), request.getReceiverId())) {
+        if (repository.existsBySenderIdAndReceiverIdAndStatus(request.getSenderId(), request.getReceiverId(),StatusRequest.PENDING)) {
             throw new AppException(ErrorCode.SEND_REQUEST_ERROR);
         }
-        if (repository.existsBySenderIdAndReceiverId(request.getReceiverId(), request.getSenderId())) {
+        if (repository.existsBySenderIdAndReceiverIdAndStatus(request.getReceiverId(), request.getSenderId(),StatusRequest.PENDING)) {
             throw new AppException(ErrorCode.SEND_REQUEST_ERROR);
         }
         if (request.getSenderId().equals(request.getReceiverId())) {
@@ -100,7 +100,7 @@ public class FriendRequestService {
         User user1 = (userA.getId() < userB.getId()) ? userA : userB;
         User user2 = (userA.getId() < userB.getId()) ? userB : userA;
 
-        if (friendRepository.existsByUser1IdAndUser2Id(user1.getId(), user2.getId())) {
+        if (friendRepository.existsFriend(user1.getId(), user2.getId())) {
             throw new AppException(ErrorCode.FRIEND_ALREADY);
         }
 
