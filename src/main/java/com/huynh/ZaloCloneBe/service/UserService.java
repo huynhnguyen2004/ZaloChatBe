@@ -1,11 +1,13 @@
 package com.huynh.ZaloCloneBe.service;
 
 import com.huynh.ZaloCloneBe.dto.request.UserRequest;
+import com.huynh.ZaloCloneBe.dto.response.SearchResponse;
 import com.huynh.ZaloCloneBe.dto.response.UserResponse;
 import com.huynh.ZaloCloneBe.entity.User;
 import com.huynh.ZaloCloneBe.exception.AppException;
 import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import com.huynh.ZaloCloneBe.mapper.UserMapper;
+import com.huynh.ZaloCloneBe.repository.FriendRepository;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
 import com.nimbusds.jwt.SignedJWT;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +19,15 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-public class UserService {
+public class  UserService {
     @Autowired
     private UserRepository repository;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
     private UserMapper mapper;
+    @Autowired
+    private FriendRepository friendRepository;
     public UserResponse createUser(UserRequest request){
         if(repository.existsByPhone(request.getPhone())){
             throw new AppException(ErrorCode.USER_EXISTED);
@@ -50,12 +54,25 @@ public class UserService {
 
         return mapper.toDto(user);
     }
-    public List<UserResponse>search(String key){
+    public List<SearchResponse>search(Long userId, String key){
+        repository.findById(userId).orElseThrow(()-> new AppException(ErrorCode.USER_NOTFOUND));
         List<User> lst=repository.search(key);
-        List<UserResponse> responseList=new ArrayList<>();
+
+        List<SearchResponse>searchResponseList=new ArrayList<>();
         for(User u:lst){
-            responseList.add(mapper.toDto(u));
+            boolean isFriend= friendRepository.existsByUser1IdAndUser2Id(userId,u.getId());
+             Long id=u.getId();
+             String firstname=u.getFirstname();
+             String phone=u.getPhone();
+            String avatarUrl=u.getAvatarUrl();
+            String lastname=u.getLastname();
+            boolean online=u.isOnline();
+             Date createdAt=u.getCreatedAt();
+            String role=u.getRole();
+            Boolean isfr=isFriend;
+            searchResponseList.add(new SearchResponse(id,firstname,phone,avatarUrl,lastname,online,createdAt,role,isfr));
         }
-        return responseList;
+
+        return searchResponseList;
     }
 }

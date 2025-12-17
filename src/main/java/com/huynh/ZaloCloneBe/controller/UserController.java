@@ -2,6 +2,7 @@ package com.huynh.ZaloCloneBe.controller;
 
 import com.huynh.ZaloCloneBe.dto.request.UserRequest;
 import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
+import com.huynh.ZaloCloneBe.dto.response.SearchResponse;
 import com.huynh.ZaloCloneBe.dto.response.UserResponse;
 import com.huynh.ZaloCloneBe.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,12 +34,16 @@ public class UserController {
                 .build();
     }
     @GetMapping("/search")
-    public ApiResponse<List<UserResponse>>search(@RequestParam("key") String key){
-       return ApiResponse.<List<UserResponse>>builder()
-               .code(1001)
-               .messenge("Tim kiem thanh cong")
-               .result(service.search(key))
-               .build();
+    public ApiResponse<List<SearchResponse>> search(
+            @RequestParam Long userId,
+            @RequestParam String key) {
+
+        return ApiResponse.<List<SearchResponse>>builder()
+                .code(1001)
+                .messenge("Tìm kiếm thành công")
+                .result(service.search(userId, key))
+                .build();
     }
+
 
 }
