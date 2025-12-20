@@ -145,6 +145,24 @@ public class FriendRequestService {
                 .createdAt(friend.getCreatedAt())
                 .build();
     }
+    public void unRequest(Long friendRequestId){
+        FriendRequest request = repository.findById(friendRequestId)
+                .orElseThrow(() -> new AppException(ErrorCode.REQUEST_NOTFOUND));
+        if(request.getStatus()!=StatusRequest.PENDING){
+            throw new AppException(ErrorCode.REQUEST_CANNOT_CANCEL);
+        }
+        request.setStatus(StatusRequest.CANCELED);
+        repository.save(request);
+    }
+    public void rejectRequest(Long friendRequestId){
+        FriendRequest request = repository.findById(friendRequestId)
+                .orElseThrow(() -> new AppException(ErrorCode.REQUEST_NOTFOUND));
+        if(request.getStatus()!=StatusRequest.PENDING){
+            throw new AppException(ErrorCode.REQUEST_CANNOT_CANCEL);
+        }
+        request.setStatus(StatusRequest.REJECTED);
+        repository.save(request);
+    }
 
 
 }

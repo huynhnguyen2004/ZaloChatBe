@@ -44,6 +44,25 @@ public class FriendRequestController {
                 .result(service.getAllSendFriend(id))
                 .build();
     }
+    @PutMapping("/reject")
+    public ApiResponse<Void> rejectRequest(@RequestParam Long id) {
+        service.rejectRequest(id);
+        return ApiResponse.<Void>builder()
+                .code(1001)
+                .messenge("reject thanh cong")
+                .build();
+    }
+
+
+    @PutMapping("/cancele")
+    public ApiResponse<Void> canceleRequest(@RequestParam Long id) {
+        service.unRequest(id);
+        return ApiResponse.<Void>builder()
+                .code(1001)
+                .messenge("reject thanh cong")
+                .build();
+
+    }
 
 
 }
