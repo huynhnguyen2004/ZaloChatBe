@@ -22,4 +22,7 @@ public class Message {
     private String content;
     private Date createdAt;
     private boolean isRead;
+    @ManyToOne
+    @JoinColumn(name="conversation_id")
+    private Conversation conversation;
 }
