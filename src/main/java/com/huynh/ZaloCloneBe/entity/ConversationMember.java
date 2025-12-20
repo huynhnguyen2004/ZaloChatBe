@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class ConversationMember {
     @EmbeddedId
-    private ConversationMemberId id;
+    private ConversationMemberId id=new ConversationMemberId();
     @ManyToOne
     @MapsId("conversationId")
     @JoinColumn(name="conversation_id")

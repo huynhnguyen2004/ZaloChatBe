@@ -2,6 +2,7 @@ package com.huynh.ZaloCloneBe.service;
 
 import com.huynh.ZaloCloneBe.dto.request.MessageRequest;
 import com.huynh.ZaloCloneBe.dto.response.MessageResponse;
+import com.huynh.ZaloCloneBe.entity.Conversation;
 import com.huynh.ZaloCloneBe.entity.Message;
 import com.huynh.ZaloCloneBe.entity.User;
 import com.huynh.ZaloCloneBe.exception.AppException;
@@ -24,38 +25,47 @@ public class MessageService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
+    private ConversationService conversationService;
+    @Autowired
     private RealTimeService realTimeService;
+
+
     public MessageResponse sendMessage(MessageRequest request) {
-        Message message = messageMapper.toEntity(request);
+
+        if (request.getContent() == null) {
+            throw new AppException(ErrorCode.CONTENT_NULL);
+        }
 
         User sender = userRepository.findById(request.getSenderId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
 
-        User receiver = userRepository.findById(request.getReceiverId())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND) );
 
-        if(request.getContent()==null){
-            throw new AppException(ErrorCode.CONTENT_NULL);
-        }
+        Conversation conversation =
+                conversationService.getOrCreatePrivateConversation(
+                        request.getSenderId(),
+                        request.getReceiverId()
+                );
+
+        Message message = new Message();
         message.setSender(sender);
-        message.setReceiver(receiver);
-
+        message.setConversation(conversation);
+        message.setContent(request.getContent());
         message.setCreatedAt(new Date());
-        message.setRead(false);
 
         Message saved = repository.save(message);
-        realTimeService.sendMessageToUser(receiver.getId(),saved);
 
-        // 3. Gửi realtime cho chính người gửi (để tự hiển thị)
 
-       realTimeService.sendMessageToSender(sender.getId(),saved);
+        realTimeService.sendMessageToUser(request.getReceiverId(), saved);
+
         return messageMapper.toDto(saved);
     }
-    public List<MessageResponse> getMessages(Long user1Id, Long user2Id) {
-        List<Message> messages = repository.getMessagesBetween(user1Id,user2Id);
 
-
-        return messages.stream().map(messageMapper::toDto).toList();
+    public List<MessageResponse> getMessages(Long conversationId) {
+        return repository
+                .findByConversationIdOrderByCreatedAtAsc(conversationId)
+                .stream()
+                .map(messageMapper::toDto)
+                .toList();
     }
 
 

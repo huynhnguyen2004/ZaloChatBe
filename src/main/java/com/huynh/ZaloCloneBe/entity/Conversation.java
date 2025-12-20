@@ -1,14 +1,12 @@
 package com.huynh.ZaloCloneBe.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.Set;
 
 
 @Entity
@@ -21,5 +19,7 @@ public class Conversation {
     private Long id;
     private String type;
     private Date createdAt;
+    @OneToMany(mappedBy = "conversation")
+    private Set<ConversationMember> members;
 
 }
