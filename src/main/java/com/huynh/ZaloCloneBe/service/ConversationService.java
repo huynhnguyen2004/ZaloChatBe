@@ -7,6 +7,7 @@ import com.huynh.ZaloCloneBe.exception.AppException;
 import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import com.huynh.ZaloCloneBe.repository.ConversationMemberRepository;
 import com.huynh.ZaloCloneBe.repository.ConversationRepository;
+import com.huynh.ZaloCloneBe.repository.MessageRepository;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,8 @@ public class ConversationService {
     private UserRepository userRepository;
     @Autowired
     private ConversationMemberRepository memberRepository;
+    @Autowired
+    private MessageRepository messageRepository;
     public Conversation getOrCreatePrivateConversation(Long userA, Long userB) {
 
         Optional<Conversation> opt =
@@ -34,6 +37,7 @@ public class ConversationService {
         c.setType("PRIVATE");
         c.setCreatedAt(new Date());
         conversationRepository.save(c);
+        Long lastId = messageRepository.getLastIdMessage(c.getId()).orElse(null);
 
         User u1 = userRepository.findById(userA).orElseThrow(()->new AppException(ErrorCode.USER_NOTFOUND));
         User u2 = userRepository.findById(userB).orElseThrow(()->new AppException(ErrorCode.USER_NOTFOUND));
@@ -41,10 +45,11 @@ public class ConversationService {
         ConversationMember m1 = new ConversationMember();
         m1.setConversation(c);
         m1.setUser(u1);
+        m1.setLastReadMessageId(lastId);
         ConversationMember m2 = new ConversationMember();
         m2.setConversation(c);
         m2.setUser(u2);
-
+        m2.setLastReadMessageId(lastId);
         memberRepository.save(m1);
         memberRepository.save(m2);
 

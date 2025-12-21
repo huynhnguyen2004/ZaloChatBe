@@ -18,6 +18,7 @@ public enum ErrorCode {
     FRIEND_ALREADY(1010,"FRIEND_ALREADY"),
     CONTENT_NULL(1011,"CONTENT NOT NULL"),
     FRIEND_notfound(1012,"FRIEND_not found"),
+    MESS_NOTFOUND(1013,"MESS NOT FOUND")
     ;
 
     private int code;
