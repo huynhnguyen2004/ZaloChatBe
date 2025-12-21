@@ -4,6 +4,8 @@ package com.huynh.ZaloCloneBe.dto.response;
 
 import lombok.*;
 
+import java.util.Date;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,4 +20,5 @@ public class ConversationItemResponse {
     private Boolean online;
     private String lastReadMessageContent;
     private Long userIdLastMessage;
+    private Date createdAt;
 }

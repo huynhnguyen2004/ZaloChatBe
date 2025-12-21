@@ -57,6 +57,7 @@ public class ConvertionMemberService {
                     .online(friend.isOnline())
                     .lastReadMessageContent(lastContent)
                     .userIdLastMessage(userIdLastMessage)
+                    .createdAt(mess.getCreatedAt())
                     .build();
 
         }).filter(Objects::nonNull).toList();

@@ -29,5 +29,12 @@ public class MessageController {
                 .result(service.getMessages(conversationId))
                 .build();
     }
+    @PostMapping("/read")
+    public void markAsRead(@RequestParam Long conversationId,
+                           @RequestParam Long userId) {
+        service.markAsRead(conversationId, userId);
+    }
+
+
 
 }

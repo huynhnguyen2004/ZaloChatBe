@@ -10,6 +10,7 @@ import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import com.huynh.ZaloCloneBe.mapper.MessageMapper;
 import com.huynh.ZaloCloneBe.repository.MessageRepository;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -66,6 +67,13 @@ public class MessageService {
                 .stream()
                 .map(messageMapper::toDto)
                 .toList();
+    }
+    @Transactional
+    public void markAsRead(Long conversationId, Long userId) {
+
+        repository.markMessagesAsRead(conversationId, userId);
+        realTimeService.markAsRead(conversationId,userId);
+
     }
 
 
