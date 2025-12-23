@@ -16,9 +16,11 @@ public class ConversationItemResponse {
     private String type;
     private Long friendId;
     private String friendName;
+    private String friendlastName;
     private String friendAvatar;
     private Boolean online;
     private String lastReadMessageContent;
+    private Boolean isReadLastContent;
     private Long userIdLastMessage;
     private Date createdAt;
 }

@@ -5,9 +5,10 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ErrorCode {
-    USER_EXISTED(1001,"User existed"),
-    USER_NOTFOUND(1002,"User NOT FOUND"),
-    UNAUTHORIZED(1003,"Login faill"),
+    USER_EXISTED(1001,"SĐT đã tồn tại"),
+    USER_NOTFOUND(1002,"Tài khoản không tồn tại"),
+    UNAUTHORIZED(1003,"Sai tên tài khoản hoặc mật khẩu"),
+    PASS_VALID(1014,"Mật khẩu phải có độ dài lớn hơn 5 kí tự và không được chứa kí tự đặc biệt"),
     REQUEST_FRIEND_ERROR(1004,"khong the gui loi moi chinh minh"),
     REQUEST_NOTFOUND(1008,"REQUEST_NOTFOUND"),
     REQUEST_ALREADY_ACCEPTED(1009,"REQUEST_ALREADY_ACCEPTED"),

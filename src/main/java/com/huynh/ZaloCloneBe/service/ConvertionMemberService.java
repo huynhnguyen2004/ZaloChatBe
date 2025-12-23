@@ -27,40 +27,53 @@ public class ConvertionMemberService {
         List<ConversationMember> myMembers =
                 repository.findByUser_Id(userId);
 
-        return myMembers.stream().map(m -> {
+        return myMembers.stream()
+                .map(m -> {
 
-            Conversation c = m.getConversation();
+                    Conversation c = m.getConversation();
+                    if (!"PRIVATE".equals(c.getType())) return null;
 
-            if (!"PRIVATE".equals(c.getType())) return null;
+                    ConversationMember other =
+                            repository.findOtherMember(c.getId(), userId);
+                    if (other == null) return null;
 
-            ConversationMember other =
-                    repository.findOtherMember(c.getId(), userId);
+                    User friend = other.getUser();
 
-            if (other == null) return null;
 
-            User friend = other.getUser();
-            Long lastId = messageRepository.getLastIdMessage(c.getId()).orElse(null);
-            String lastContent = messageRepository.findById(lastId)
-                    .map(Message::getContent)
-                    .orElse(null);
-            Message mess=messageRepository.findById(lastId).orElseThrow(
-                    ()->new AppException(ErrorCode.MESS_NOTFOUND)
-            );
-            Long userIdLastMessage=mess.getSender().getId();
+                    Optional<Message> lastMsgOpt =
+                            messageRepository.findTopByConversation_IdOrderByCreatedAtDesc(c.getId());
 
-            return ConversationItemResponse.builder()
-                    .conversationId(c.getId())
-                    .type(c.getType())
-                    .friendId(friend.getId())
-                    .friendName(friend.getLastname())
-                    .friendAvatar(friend.getAvatarUrl())
-                    .online(friend.isOnline())
-                    .lastReadMessageContent(lastContent)
-                    .userIdLastMessage(userIdLastMessage)
-                    .createdAt(mess.getCreatedAt())
-                    .build();
+                    Message lastMsg = lastMsgOpt.orElse(null);
+                    Boolean isRead=lastMsg.isRead();
+                    return ConversationItemResponse.builder()
+                            .conversationId(c.getId())
+                            .type(c.getType())
+                            .friendId(friend.getId())
+                            .friendName(friend.getFirstname())
+                            .friendlastName(friend.getLastname())
+                            .friendAvatar(friend.getAvatarUrl())
+                            .online(friend.isOnline())
+                            .lastReadMessageContent(
+                                    lastMsg != null ? lastMsg.getContent() : null
+                            )
+                            .isReadLastContent(isRead)
+                            .userIdLastMessage(
+                                    lastMsg != null ? lastMsg.getSender().getId() : null
+                            )
+                            .createdAt(
+                                    lastMsg != null ? lastMsg.getCreatedAt() : null
+                            )
+                            .build();
 
-        }).filter(Objects::nonNull).toList();
+                })
+                .filter(Objects::nonNull)
+                .sorted((a, b) -> {
+                    if (a.getCreatedAt() == null) return 1;
+                    if (b.getCreatedAt() == null) return -1;
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                })
+                .toList();
     }
+
 
 }

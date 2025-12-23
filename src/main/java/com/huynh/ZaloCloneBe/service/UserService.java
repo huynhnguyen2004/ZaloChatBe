@@ -28,9 +28,17 @@ public class  UserService {
     private UserMapper mapper;
     @Autowired
     private FriendRepository friendRepository;
+    public  boolean hasSpecialCharacter(String password) {
+        if (password == null) return false;
+        return password.matches(".*[^a-zA-Z0-9].*");
+    }
+
     public UserResponse createUser(UserRequest request){
         if(repository.existsByPhone(request.getPhone())){
             throw new AppException(ErrorCode.USER_EXISTED);
+        }
+        if(hasSpecialCharacter(request.getPassword())||request.getPassword().length()<6){
+            throw new AppException(ErrorCode.PASS_VALID);
         }
         User user=mapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));

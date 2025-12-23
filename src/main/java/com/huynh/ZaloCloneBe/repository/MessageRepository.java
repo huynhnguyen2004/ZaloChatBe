@@ -32,6 +32,9 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             @Param("userId") Long userId
     );
 
+    Optional<Message> findTopByConversation_IdOrderByCreatedAtDesc(Long conversationId);
+
+
 
 
 }
