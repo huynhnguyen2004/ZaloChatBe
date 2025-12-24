@@ -19,6 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class AuthenticationService {
@@ -30,6 +32,9 @@ public class AuthenticationService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private CaptchaService captchaService;
+    private final Map<String, Integer> failCount = new ConcurrentHashMap<>();
 
     private static final String SECRET = "Bgtov/9iSc1HWhK6xD/VnqXcMbcEiRl/vNxT+nLhTICOzNkeY5qu+8eE6fjv7fDh";
 
@@ -41,14 +46,23 @@ public class AuthenticationService {
         return userMapper.toDto(saved);
     }
     public AuthenResponse login(AuthenRequest request) throws Exception {
+        int failed = failCount.getOrDefault(request.getPhone(), 0);
         String phone = request.getPhone();
 
         User user = repository.findByPhone(phone)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+        if (failed >= 3) {
+            if (request.getCaptchaToken() == null ||
+                    !captchaService.verify(request.getCaptchaToken())) {
 
+                throw new AppException(ErrorCode.CAPTCHA_INVALID);
+            }
+        }
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            failCount.put(request.getPhone(), failed+1);
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
+        failCount.remove(request.getPhone());
         user.setOnline(true);
         User saved=repository.save(user);
         UserResponse userResponse = userMapper.toDto(saved);

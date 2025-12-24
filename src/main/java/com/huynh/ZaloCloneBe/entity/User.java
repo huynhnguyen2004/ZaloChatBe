@@ -25,4 +25,5 @@ public class User {
     private boolean online;
     private Date createdAt;
     private String role;
+    private Integer failedCount=0;
 }

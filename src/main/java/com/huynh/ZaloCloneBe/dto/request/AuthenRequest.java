@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class AuthenRequest {
     private String phone;
     private String password;
+    private String captchaToken;
 
 }

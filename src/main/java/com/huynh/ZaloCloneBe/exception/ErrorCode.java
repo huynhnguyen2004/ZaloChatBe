@@ -7,7 +7,7 @@ import lombok.Getter;
 public enum ErrorCode {
     USER_EXISTED(1001,"SĐT đã tồn tại"),
     USER_NOTFOUND(1002,"Tài khoản không tồn tại"),
-    UNAUTHORIZED(1003,"Sai tên tài khoản hoặc mật khẩu"),
+    UNAUTHORIZED(1003,"Thông tin đăng nhập sai"),
     PASS_VALID(1014,"Mật khẩu phải có độ dài lớn hơn 5 kí tự và không được chứa kí tự đặc biệt"),
     REQUEST_FRIEND_ERROR(1004,"khong the gui loi moi chinh minh"),
     REQUEST_NOTFOUND(1008,"REQUEST_NOTFOUND"),
@@ -19,7 +19,8 @@ public enum ErrorCode {
     FRIEND_ALREADY(1010,"FRIEND_ALREADY"),
     CONTENT_NULL(1011,"CONTENT NOT NULL"),
     FRIEND_notfound(1012,"FRIEND_not found"),
-    MESS_NOTFOUND(1013,"MESS NOT FOUND")
+    MESS_NOTFOUND(1013,"MESS NOT FOUND"),
+    CAPTCHA_INVALID(1014,"Capcha không hợp lệ")
     ;
 
     private int code;
