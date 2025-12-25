@@ -10,6 +10,7 @@ import com.huynh.ZaloCloneBe.mapper.UserMapper;
 import com.huynh.ZaloCloneBe.repository.FriendRepository;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
 import com.nimbusds.jwt.SignedJWT;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,8 @@ public class  UserService {
     private UserMapper mapper;
     @Autowired
     private FriendRepository friendRepository;
+    @Autowired
+    private FileService fileService;
     public  boolean hasSpecialCharacter(String password) {
         if (password == null) return false;
         return password.matches(".*[^a-zA-Z0-9].*");
@@ -83,4 +86,16 @@ public class  UserService {
 
         return searchResponseList;
     }
+    @Transactional
+    public UserResponse updateAvatar(Long userId, String avatarUrl) {
+        User user = repository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+
+        user.setAvatarUrl(avatarUrl);
+        return mapper.toDto(user);
+    }
+
+
+
+
 }

@@ -20,7 +20,9 @@ public enum ErrorCode {
     CONTENT_NULL(1011,"CONTENT NOT NULL"),
     FRIEND_notfound(1012,"FRIEND_not found"),
     MESS_NOTFOUND(1013,"MESS NOT FOUND"),
-    CAPTCHA_INVALID(1014,"Capcha không hợp lệ")
+    CAPTCHA_INVALID(1014,"Capcha không hợp lệ"),
+    FILE_EMPTY(1015,"FILE RONG"),
+    JUST_IMAGE(1016,"CHI ANH jpg,png")
     ;
 
     private int code;

@@ -4,9 +4,11 @@ import com.huynh.ZaloCloneBe.dto.request.UserRequest;
 import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
 import com.huynh.ZaloCloneBe.dto.response.SearchResponse;
 import com.huynh.ZaloCloneBe.dto.response.UserResponse;
+import com.huynh.ZaloCloneBe.service.FileService;
 import com.huynh.ZaloCloneBe.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,6 +17,8 @@ import java.util.List;
 public class UserController {
    @Autowired
     private UserService service;
+   @Autowired
+   private FileService fileService;
    @PostMapping("/register")
    public ApiResponse<UserResponse>createUser(@RequestBody UserRequest request){
        return ApiResponse.<UserResponse>builder()
@@ -44,6 +48,23 @@ public class UserController {
                 .result(service.search(userId, key))
                 .build();
     }
+    @PostMapping( "/uploads/avatar")
+    public ApiResponse<UserResponse> uploadAvatar(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam Long userId
+    ) throws Exception {
+
+        String avatarUrl = fileService.uploadAvatar(file,userId);
+
+
+        return ApiResponse.<UserResponse>builder()
+                .code(1001)
+                .messenge("thêm ảnh đại diện thành công")
+                .result(service.updateAvatar(userId, avatarUrl))
+                .build();
+
+    }
+
 
 
 }
