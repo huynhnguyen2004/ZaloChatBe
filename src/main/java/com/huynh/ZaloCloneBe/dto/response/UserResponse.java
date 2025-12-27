@@ -16,7 +16,10 @@ public class UserResponse {
     private Long id;
     private String firstname;
     private String phone;
+    private Integer gender;
+    private Date birthday;
     private String avatarUrl;
+    private String coverUrl;
     private String lastname;
     private boolean online;
     private Date createdAt;

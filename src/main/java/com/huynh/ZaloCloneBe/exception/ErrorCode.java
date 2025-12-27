@@ -22,7 +22,12 @@ public enum ErrorCode {
     MESS_NOTFOUND(1013,"MESS NOT FOUND"),
     CAPTCHA_INVALID(1014,"Capcha không hợp lệ"),
     FILE_EMPTY(1015,"FILE RONG"),
-    JUST_IMAGE(1016,"CHI ANH jpg,png")
+    JUST_IMAGE(1016,"CHI ANH jpg,png"),
+    OLDPASS_NULL(1017,"Vui lòng nhập mật khẩu hiện tại"),
+    NEWPASS_NULL(1018,"Vui lòng nhập mật khẩu mới"),
+    PASS_ERROR(1019,"Mật khẩu hiện tại sai"),
+    PASS_DIF(1020,"Mật khẩu phải khác mật khẩu hiện tại")
+
     ;
 
     private int code;

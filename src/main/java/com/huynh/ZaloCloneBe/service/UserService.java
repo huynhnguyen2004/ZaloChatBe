@@ -1,7 +1,10 @@
 package com.huynh.ZaloCloneBe.service;
 
+import com.huynh.ZaloCloneBe.dto.request.UpdatePassword;
+import com.huynh.ZaloCloneBe.dto.request.UpdateRequest;
 import com.huynh.ZaloCloneBe.dto.request.UserRequest;
 import com.huynh.ZaloCloneBe.dto.response.SearchResponse;
+import com.huynh.ZaloCloneBe.dto.response.UpdatePasswordResponse;
 import com.huynh.ZaloCloneBe.dto.response.UserResponse;
 import com.huynh.ZaloCloneBe.entity.User;
 import com.huynh.ZaloCloneBe.exception.AppException;
@@ -93,6 +96,61 @@ public class  UserService {
 
         user.setAvatarUrl(avatarUrl);
         return mapper.toDto(user);
+    }
+    @Transactional
+    public UserResponse updateCover(Long userId, String coverUrl) {
+        User user = repository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+
+        user.setCoverUrl(coverUrl);
+        return mapper.toDto(user);
+    }
+    @Transactional
+    public UserResponse updateProfile(Long userId, UpdateRequest request){
+        User user=repository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOTFOUND));
+        if(request.getFirstname()!=null){
+            user.setFirstname(request.getFirstname());
+        }
+        if(request.getLastname()!=null){
+            user.setLastname(request.getLastname());
+        }
+        if(request.getBirthday()!=null){
+            user.setBirthday(request.getBirthday());
+        }
+        if(request.getGender()!=null){
+            user.setGender(request.getGender());
+        }
+        repository.save(user);
+        return mapper.toDto(user);
+    }
+    @Transactional
+    public UpdatePasswordResponse updatePassWord(Long userId, UpdatePassword request){
+        User user=repository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOTFOUND));
+        String oldpass=user.getPassword();
+        if(request.getOldPassword()==null){
+            throw new AppException(ErrorCode.OLDPASS_NULL);
+        }
+        if(request.getNewPassword()==null){
+            throw new AppException(ErrorCode.NEWPASS_NULL);
+        }
+        if(!passwordEncoder.matches( request.getOldPassword(),user.getPassword())){
+            throw new AppException(ErrorCode.PASS_ERROR);
+        }
+        if(passwordEncoder.matches( request.getNewPassword(), user.getPassword())){
+            throw new AppException(ErrorCode.PASS_DIF);
+        }
+        if(hasSpecialCharacter(request.getNewPassword())||request.getNewPassword().length()<6){
+            throw new AppException(ErrorCode.PASS_VALID);
+        }
+        String hashpass=passwordEncoder.encode(request.getNewPassword());
+        user.setPassword(hashpass);
+
+        UpdatePasswordResponse response=mapper.toDtoPass(user);
+        response.setOldPass(oldpass);
+        repository.save(user);
+        return response;
+
+
     }
 
 

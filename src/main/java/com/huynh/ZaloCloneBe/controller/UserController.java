@@ -1,8 +1,11 @@
 package com.huynh.ZaloCloneBe.controller;
 
+import com.huynh.ZaloCloneBe.dto.request.UpdatePassword;
+import com.huynh.ZaloCloneBe.dto.request.UpdateRequest;
 import com.huynh.ZaloCloneBe.dto.request.UserRequest;
 import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
 import com.huynh.ZaloCloneBe.dto.response.SearchResponse;
+import com.huynh.ZaloCloneBe.dto.response.UpdatePasswordResponse;
 import com.huynh.ZaloCloneBe.dto.response.UserResponse;
 import com.huynh.ZaloCloneBe.service.FileService;
 import com.huynh.ZaloCloneBe.service.UserService;
@@ -63,6 +66,44 @@ public class UserController {
                 .result(service.updateAvatar(userId, avatarUrl))
                 .build();
 
+    }
+    @PostMapping( "/uploads/cover")
+    public ApiResponse<UserResponse> uploadCover(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam Long userId
+    ) throws Exception {
+
+        String coverUrl = fileService.uploadCover(file,userId);
+
+
+        return ApiResponse.<UserResponse>builder()
+                .code(1001)
+                .messenge("thêm ảnh bìa  thành công")
+                .result(service.updateCover(userId, coverUrl))
+                .build();
+
+    }
+    @PutMapping("/editInfor")
+    public ApiResponse<UserResponse> updateProfile(
+            @RequestParam Long userId,
+            @RequestBody UpdateRequest request
+    ) {
+        return ApiResponse.<UserResponse>builder()
+                .code(1001)
+                .messenge("Sua thong tin thanh cong")
+                .result(service.updateProfile(userId,request))
+                .build();
+    }
+    @PutMapping("/editPass")
+    public ApiResponse<UpdatePasswordResponse> updateProfile(
+            @RequestParam Long userId,
+            @RequestBody UpdatePassword request
+    ) {
+        return ApiResponse.<UpdatePasswordResponse>builder()
+                .code(1001)
+                .messenge("Đổi mật khẩu thanh cong")
+                .result(service.updatePassWord(userId,request))
+                .build();
     }
 
 
