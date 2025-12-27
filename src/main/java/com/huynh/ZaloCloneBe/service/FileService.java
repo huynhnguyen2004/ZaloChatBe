@@ -42,6 +42,6 @@ public class FileService {
         String filename="avatar."+ext;
         Path filePath=userDir.resolve(filename);
         Files.copy(file.getInputStream(),filePath, StandardCopyOption.REPLACE_EXISTING);
-        return "/uploads/cover/user_"+userId+"/"+filename;
+        return "/uploads/covers/user_"+userId+"/"+filename;
     }
 }
