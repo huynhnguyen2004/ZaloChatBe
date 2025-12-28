@@ -5,12 +5,17 @@ import com.huynh.ZaloCloneBe.dto.request.UpdateRequest;
 import com.huynh.ZaloCloneBe.dto.request.UserRequest;
 import com.huynh.ZaloCloneBe.dto.response.SearchResponse;
 import com.huynh.ZaloCloneBe.dto.response.UpdatePasswordResponse;
+import com.huynh.ZaloCloneBe.dto.response.UserProfileResponse;
 import com.huynh.ZaloCloneBe.dto.response.UserResponse;
+import com.huynh.ZaloCloneBe.entity.FriendRequest;
+import com.huynh.ZaloCloneBe.entity.RelationshipStatus;
+import com.huynh.ZaloCloneBe.entity.StatusRequest;
 import com.huynh.ZaloCloneBe.entity.User;
 import com.huynh.ZaloCloneBe.exception.AppException;
 import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import com.huynh.ZaloCloneBe.mapper.UserMapper;
 import com.huynh.ZaloCloneBe.repository.FriendRepository;
+import com.huynh.ZaloCloneBe.repository.FriendRequestRepository;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.transaction.Transactional;
@@ -21,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class  UserService {
@@ -34,6 +40,8 @@ public class  UserService {
     private FriendRepository friendRepository;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private FriendRequestRepository friendRequestRepository;
     public  boolean hasSpecialCharacter(String password) {
         if (password == null) return false;
         return password.matches(".*[^a-zA-Z0-9].*");
@@ -152,6 +160,44 @@ public class  UserService {
 
 
     }
+    public RelationshipStatus getRelationshipStatus(Long meId, Long otherId) {
+
+        if (friendRepository.existsFriend(meId, otherId)) {
+            return RelationshipStatus.FRIEND;
+        }
+
+        if (friendRequestRepository
+                .existsBySenderIdAndReceiverIdAndStatus(
+                        meId, otherId, StatusRequest.PENDING)) {
+            return RelationshipStatus.SENT_REQUEST;
+        }
+
+        if (friendRequestRepository
+                .existsBySenderIdAndReceiverIdAndStatus(
+                        otherId, meId, StatusRequest.PENDING)) {
+            return RelationshipStatus.RECEIVED_REQUEST;
+        }
+
+        return RelationshipStatus.NONE;
+    }
+    public UserProfileResponse getUserProfile(Long meId, Long otherId) {
+
+        User user = repository.findById(otherId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+
+        RelationshipStatus status = getRelationshipStatus(meId, otherId);
+
+        return UserProfileResponse.builder()
+                .id(user.getId())
+                .firstname(user.getFirstname())
+                .lastname(user.getLastname())
+                .avatarUrl(user.getAvatarUrl())
+                .coverUrl(user.getCoverUrl())
+                .gender(user.getGender())
+                .relationshipStatus(status)
+                .build();
+    }
+
 
 
 

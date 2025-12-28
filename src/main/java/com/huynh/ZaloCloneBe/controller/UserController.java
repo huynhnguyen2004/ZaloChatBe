@@ -3,10 +3,7 @@ package com.huynh.ZaloCloneBe.controller;
 import com.huynh.ZaloCloneBe.dto.request.UpdatePassword;
 import com.huynh.ZaloCloneBe.dto.request.UpdateRequest;
 import com.huynh.ZaloCloneBe.dto.request.UserRequest;
-import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
-import com.huynh.ZaloCloneBe.dto.response.SearchResponse;
-import com.huynh.ZaloCloneBe.dto.response.UpdatePasswordResponse;
-import com.huynh.ZaloCloneBe.dto.response.UserResponse;
+import com.huynh.ZaloCloneBe.dto.response.*;
 import com.huynh.ZaloCloneBe.service.FileService;
 import com.huynh.ZaloCloneBe.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,6 +100,17 @@ public class UserController {
                 .code(1001)
                 .messenge("Đổi mật khẩu thanh cong")
                 .result(service.updatePassWord(userId,request))
+                .build();
+    }
+    @GetMapping("/seen")
+    public ApiResponse<UserProfileResponse> viewUserProfile(
+           @RequestParam Long meId,
+           @RequestParam Long otherId
+    ) {
+        return ApiResponse.<UserProfileResponse>builder()
+                .code(1001)
+                .messenge("Xem trang cá nhân")
+                .result(service.getUserProfile(meId, otherId))
                 .build();
     }
 

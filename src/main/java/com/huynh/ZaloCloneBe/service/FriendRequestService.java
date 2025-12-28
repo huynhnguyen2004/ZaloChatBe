@@ -145,24 +145,38 @@ public class FriendRequestService {
                 .createdAt(friend.getCreatedAt())
                 .build();
     }
-    public void unRequest(Long friendRequestId){
-        FriendRequest request = repository.findById(friendRequestId)
-                .orElseThrow(() -> new AppException(ErrorCode.REQUEST_NOTFOUND));
-        if(request.getStatus()!=StatusRequest.PENDING){
-            throw new AppException(ErrorCode.REQUEST_CANNOT_CANCEL);
-        }
+    public void cancelRequest(Long meId, Long otherId) {
+
+        FriendRequest request = repository
+                .findBySenderIdAndReceiverIdAndStatus(
+                        meId,
+                        otherId,
+                        StatusRequest.PENDING
+                )
+                .orElseThrow(() ->
+                        new AppException(ErrorCode.REQUEST_CANNOT_CANCEL)
+                );
+
         request.setStatus(StatusRequest.CANCELED);
         repository.save(request);
     }
-    public void rejectRequest(Long friendRequestId){
-        FriendRequest request = repository.findById(friendRequestId)
-                .orElseThrow(() -> new AppException(ErrorCode.REQUEST_NOTFOUND));
-        if(request.getStatus()!=StatusRequest.PENDING){
-            throw new AppException(ErrorCode.REQUEST_CANNOT_CANCEL);
-        }
+
+    public void rejectRequest(Long meId, Long otherId) {
+
+        FriendRequest request = repository
+                .findBySenderIdAndReceiverIdAndStatus(
+                        otherId,
+                        meId,
+                        StatusRequest.PENDING
+                )
+                .orElseThrow(() ->
+                        new AppException(ErrorCode.REQUEST_CANNOT_REJECT)
+                );
+
         request.setStatus(StatusRequest.REJECTED);
         repository.save(request);
     }
+
 
 
 }
