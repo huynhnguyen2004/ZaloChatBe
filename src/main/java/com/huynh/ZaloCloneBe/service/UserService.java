@@ -194,6 +194,7 @@ public class  UserService {
                 .avatarUrl(user.getAvatarUrl())
                 .coverUrl(user.getCoverUrl())
                 .gender(user.getGender())
+                .online(user.isOnline())
                 .relationshipStatus(status)
                 .build();
     }

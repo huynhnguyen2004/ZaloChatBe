@@ -19,5 +19,6 @@ public class UserProfileResponse {
     private String avatarUrl;
     private String coverUrl;
     private String lastname;
+    private Boolean online;
     private RelationshipStatus relationshipStatus;
 }

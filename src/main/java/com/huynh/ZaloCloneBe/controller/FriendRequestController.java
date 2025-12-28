@@ -28,14 +28,18 @@ public class FriendRequestController {
                 .result(service.sendRequest(request))
                 .build();
     }
-    @PostMapping("/accepted")
-    public ApiResponse<AcceptedFriendResponse> acceptedFriend(@RequestBody AcceptedFriendRequest request) {
+    @PutMapping("/accept")
+    public ApiResponse<AcceptedFriendResponse> acceptFriend(
+            @RequestParam Long meId,
+            @RequestParam Long otherId
+    ) {
         return ApiResponse.<AcceptedFriendResponse>builder()
-                .code(1001)
-                .messenge("chap nhan ban be thanh cong")
-                .result(service.acceptedFriend(request.getId()))
+                .code(1000)
+                .messenge("Chấp nhận lời mời kết bạn")
+                .result(service.acceptFriend(meId, otherId))
                 .build();
     }
+
     @GetMapping
     public ApiResponse<List<ListSendFriendResponse>>getAllFriendRequest(@RequestParam("id") Long id){
         return ApiResponse.<List<ListSendFriendResponse>>builder()
