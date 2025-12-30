@@ -27,7 +27,10 @@ public enum ErrorCode {
     OLDPASS_NULL(1017,"Vui lòng nhập mật khẩu hiện tại"),
     NEWPASS_NULL(1018,"Vui lòng nhập mật khẩu mới"),
     PASS_ERROR(1019,"Mật khẩu hiện tại sai"),
-    PASS_DIF(1020,"Mật khẩu phải khác mật khẩu hiện tại")
+    PASS_DIF(1020,"Mật khẩu phải khác mật khẩu hiện tại"),
+    STATUS_LOCK(1021,"Tài khoản bạn đã bị khóa"),
+    USER_ALREADY_LOCKED(1022,"Tài khoản đã khóa rồi"),
+    USER_ALREADY_ACTIVE(1023,"Tài khoản này đã mở rồi")
 
     ;
 

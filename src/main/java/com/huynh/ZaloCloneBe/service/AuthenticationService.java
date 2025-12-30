@@ -50,6 +50,9 @@ public class AuthenticationService {
 
         User user = repository.findByPhone(phone)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+        if(!user.getStatus()){
+            throw new AppException(ErrorCode.STATUS_LOCK);
+        }
         if (failed >= 3) {
             if (request.getCaptchaToken() == null ||
                     !captchaService.verify(request.getCaptchaToken())) {

@@ -76,6 +76,7 @@ public class  UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setCreatedAt(new Date());
         user.setRole("Customer");
+        user.setStatus(true);
         User saved = repository.save(user);
         return mapper.toDto(saved);
     }
@@ -216,6 +217,30 @@ public class  UserService {
                 .relationshipStatus(status)
                 .build();
     }
+    @Transactional
+    public void lockUser(Long userId) {
+        User user = repository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+
+        if (!user.getStatus()) {
+            throw new AppException(ErrorCode.USER_ALREADY_LOCKED);
+        }
+
+        repository.lockUser(userId);
+    }
+    @Transactional
+    public void unlockUser(Long userId) {
+        User user = repository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+
+        if (user.getStatus()) {
+            throw new AppException(ErrorCode.USER_ALREADY_ACTIVE);
+        }
+
+        repository.unlockUser(userId);
+    }
+
+
 
 
 

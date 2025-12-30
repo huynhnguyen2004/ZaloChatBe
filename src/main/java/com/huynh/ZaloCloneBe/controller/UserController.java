@@ -125,6 +125,23 @@ public class UserController {
                .result(service.getCustomer(page,size))
                .build();
     }
+    @PutMapping("/lock")
+    public ApiResponse<Void> lock(@RequestParam Long userId) {
+        service.lockUser(userId);
+        return ApiResponse.<Void>builder()
+                .code(1001)
+                .messenge("Đã khóa thành công")
+                .build();
+    }
+    @PutMapping("/unlock")
+    public ApiResponse<Void> unlock(@RequestParam Long userId) {
+        service.unlockUser(userId);
+        return ApiResponse.<Void>builder()
+                .code(1001)
+                .messenge("Đã kích hoạt thành công")
+                .build();
+    }
+
 
 
 

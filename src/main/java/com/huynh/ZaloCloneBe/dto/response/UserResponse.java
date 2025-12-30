@@ -24,5 +24,6 @@ public class UserResponse {
     private boolean online;
     private Date createdAt;
     private String role;
+    private Boolean status;
 }
 
