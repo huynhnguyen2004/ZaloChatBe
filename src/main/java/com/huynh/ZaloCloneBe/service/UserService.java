@@ -3,10 +3,7 @@ package com.huynh.ZaloCloneBe.service;
 import com.huynh.ZaloCloneBe.dto.request.UpdatePassword;
 import com.huynh.ZaloCloneBe.dto.request.UpdateRequest;
 import com.huynh.ZaloCloneBe.dto.request.UserRequest;
-import com.huynh.ZaloCloneBe.dto.response.SearchResponse;
-import com.huynh.ZaloCloneBe.dto.response.UpdatePasswordResponse;
-import com.huynh.ZaloCloneBe.dto.response.UserProfileResponse;
-import com.huynh.ZaloCloneBe.dto.response.UserResponse;
+import com.huynh.ZaloCloneBe.dto.response.*;
 import com.huynh.ZaloCloneBe.entity.FriendRequest;
 import com.huynh.ZaloCloneBe.entity.RelationshipStatus;
 import com.huynh.ZaloCloneBe.entity.StatusRequest;
@@ -20,6 +17,9 @@ import com.huynh.ZaloCloneBe.repository.UserRepository;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +47,24 @@ public class  UserService {
         return password.matches(".*[^a-zA-Z0-9].*");
     }
 
+    public PageResponse<UserResponse>getCustomer(int page,int size){
+        Pageable pageable= PageRequest.of(page,size);
+        Page<User>userPage=repository.findAllCustomer(pageable);
+        List<UserResponse>responseList=new ArrayList<>();
+        for(User user:userPage.getContent()){
+            responseList.add(mapper.toDto(user));
+        }
+        return PageResponse.<UserResponse>builder()
+                .content(responseList)
+                .page(userPage.getNumber())
+                .size(userPage.getSize())
+                .totalElements(userPage.getTotalElements())
+                .totalPages(userPage.getTotalPages())
+                .first(userPage.isFirst())
+                .last(userPage.isLast())
+                .build();
+
+    }
     public UserResponse createUser(UserRequest request){
         if(repository.existsByPhone(request.getPhone())){
             throw new AppException(ErrorCode.USER_EXISTED);

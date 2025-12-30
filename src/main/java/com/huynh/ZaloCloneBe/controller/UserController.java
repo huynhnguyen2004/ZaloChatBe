@@ -113,6 +113,20 @@ public class UserController {
                 .result(service.getUserProfile(meId, otherId))
                 .build();
     }
+    @GetMapping("/customer")
+    public ApiResponse<PageResponse<UserResponse>>getAllCustomer(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+
+    ){
+       return ApiResponse.<PageResponse<UserResponse>>builder()
+               .code(1001)
+               .messenge("Lay danh sach khach hang thanh cong")
+               .result(service.getCustomer(page,size))
+               .build();
+    }
+
+
 
 
 
