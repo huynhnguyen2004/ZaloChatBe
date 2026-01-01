@@ -276,6 +276,12 @@ public class  UserService {
                 .build();
 
     }
+    public UserResponse getUserDetail(Long userId){
+        User user=repository.findById(userId).orElseThrow(
+                ()->new AppException(ErrorCode.USER_NOTFOUND)
+        );
+        return mapper.toDto(user);
+    }
 
 
 

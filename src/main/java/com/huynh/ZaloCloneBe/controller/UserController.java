@@ -162,6 +162,14 @@ public class UserController {
                 .result(service.filterCustomer(status,page,size))
                 .build();
     }
+    @GetMapping("/detail")
+    public ApiResponse<UserResponse>getDetailUser(@RequestParam Long userId){
+       return ApiResponse.<UserResponse>builder()
+               .code(1001)
+               .messenge("lay chi tiet khach hang thanh cong")
+               .result(service.getUserDetail(userId))
+               .build();
+    }
 
 
 
