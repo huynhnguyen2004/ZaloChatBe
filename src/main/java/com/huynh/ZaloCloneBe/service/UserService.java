@@ -258,6 +258,24 @@ public class  UserService {
 
 
     }
+    public PageResponse<UserResponse>filterCustomer(Boolean status,int page,int size){
+        Pageable pageable=PageRequest.of(page,size);
+        Page<User>list=repository.filterCustomer(status,pageable);
+        List<UserResponse>responseList=new ArrayList<>();
+        for(User user:list.getContent()){
+            responseList.add(mapper.toDto(user));
+        }
+        return PageResponse.<UserResponse>builder()
+                .content(responseList)
+                .page(list.getNumber())
+                .size(list.getSize())
+                .totalPages(list.getTotalPages())
+                .totalElements(list.getTotalElements())
+                .first(list.isFirst())
+                .last(list.isLast())
+                .build();
+
+    }
 
 
 

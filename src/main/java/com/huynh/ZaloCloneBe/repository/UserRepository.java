@@ -57,6 +57,11 @@ public interface UserRepository extends JpaRepository<User,Long> {
             @Param("key") String key,
             Pageable pageable
     );
+    @Query("""
+Select u from User u
+where u.status=:status
+""")
+    Page<User>filterCustomer(@Param("status")Boolean status,Pageable pageable);
 
 
 }

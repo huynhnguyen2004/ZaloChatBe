@@ -144,13 +144,23 @@ public class UserController {
     @GetMapping("/search/customer")
     public ApiResponse<PageResponse<UserResponse>>searchCustomer(@RequestParam String key,
                                                                  @RequestParam(defaultValue = "0") int page,
-                                                                 @RequestParam(defaultValue = "0")int size){
+                                                                 @RequestParam(defaultValue = "5")int size){
 
        return ApiResponse.<PageResponse<UserResponse>>builder()
                .code(1001)
                .messenge("tim kiem khach hang thanh cong")
                .result(service.searchCustomer(key,page,size))
                .build();
+    }
+    @GetMapping("/filter/status")
+    public ApiResponse<PageResponse<UserResponse>>filterCustomer(@RequestParam Boolean status,
+                                                                 @RequestParam(defaultValue = "0")int page,
+                                                                 @RequestParam(defaultValue = "5") int size){
+        return ApiResponse.<PageResponse<UserResponse>>builder()
+                .code(1001)
+                .messenge("loc khach hang thanh cong")
+                .result(service.filterCustomer(status,page,size))
+                .build();
     }
 
 
