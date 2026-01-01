@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +49,7 @@ public class  UserService {
     }
 
     public PageResponse<UserResponse>getCustomer(int page,int size){
-        Pageable pageable= PageRequest.of(page,size);
+        Pageable pageable= PageRequest.of(page,size, Sort.by("lastname").ascending());
         Page<User>userPage=repository.findAllCustomer(pageable);
         List<UserResponse>responseList=new ArrayList<>();
         for(User user:userPage.getContent()){
@@ -240,7 +241,7 @@ public class  UserService {
         repository.unlockUser(userId);
     }
     public PageResponse<UserResponse>searchCustomer(String key,int page,int size){
-        Pageable pageable=PageRequest.of(page,size);
+        Pageable pageable=PageRequest.of(page,size,Sort.by("createdAt").descending());
         Page<User>list=repository.searchCustomer(key,pageable);
         List<UserResponse>responseList=new ArrayList<>();
         for(User user:list.getContent()){
@@ -259,7 +260,7 @@ public class  UserService {
 
     }
     public PageResponse<UserResponse>filterCustomer(Boolean status,int page,int size){
-        Pageable pageable=PageRequest.of(page,size);
+        Pageable pageable=PageRequest.of(page,size,Sort.by("lastname").ascending());
         Page<User>list=repository.filterCustomer(status,pageable);
         List<UserResponse>responseList=new ArrayList<>();
         for(User user:list.getContent()){

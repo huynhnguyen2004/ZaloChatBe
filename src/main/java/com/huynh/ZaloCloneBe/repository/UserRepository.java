@@ -49,9 +49,10 @@ public interface UserRepository extends JpaRepository<User,Long> {
     void unlockUser(@Param("userId") Long userId);
     @Query("""
     SELECT u FROM User u
-    WHERE LOWER(u.firstname) LIKE LOWER(CONCAT('%', :key, '%'))
+    WHERE (LOWER(u.firstname) LIKE LOWER(CONCAT('%', :key, '%'))
        OR LOWER(u.lastname)  LIKE LOWER(CONCAT('%', :key, '%'))
        OR u.phone            LIKE CONCAT('%', :key, '%')
+       )and u.role='Customer'
 """)
     Page<User> searchCustomer(
             @Param("key") String key,
@@ -59,7 +60,7 @@ public interface UserRepository extends JpaRepository<User,Long> {
     );
     @Query("""
 Select u from User u
-where u.status=:status
+where u.status=:status and u.role='Customer'
 """)
     Page<User>filterCustomer(@Param("status")Boolean status,Pageable pageable);
 
