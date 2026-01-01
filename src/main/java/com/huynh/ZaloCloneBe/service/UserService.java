@@ -239,7 +239,25 @@ public class  UserService {
 
         repository.unlockUser(userId);
     }
+    public PageResponse<UserResponse>searchCustomer(String key,int page,int size){
+        Pageable pageable=PageRequest.of(page,size);
+        Page<User>list=repository.searchCustomer(key,pageable);
+        List<UserResponse>responseList=new ArrayList<>();
+        for(User user:list.getContent()){
+            responseList.add(mapper.toDto(user));
+        }
+        return PageResponse.<UserResponse>builder()
+                .content(responseList)
+                .page(list.getNumber())
+                .size(list.getSize())
+                .totalPages(list.getTotalPages())
+                .totalElements(list.getTotalElements())
+                .first(list.isFirst())
+                .last(list.isLast())
+                .build();
 
+
+    }
 
 
 

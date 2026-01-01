@@ -141,6 +141,17 @@ public class UserController {
                 .messenge("Đã kích hoạt thành công")
                 .build();
     }
+    @GetMapping("/search/customer")
+    public ApiResponse<PageResponse<UserResponse>>searchCustomer(@RequestParam String key,
+                                                                 @RequestParam(defaultValue = "0") int page,
+                                                                 @RequestParam(defaultValue = "0")int size){
+
+       return ApiResponse.<PageResponse<UserResponse>>builder()
+               .code(1001)
+               .messenge("tim kiem khach hang thanh cong")
+               .result(service.searchCustomer(key,page,size))
+               .build();
+    }
 
 
 

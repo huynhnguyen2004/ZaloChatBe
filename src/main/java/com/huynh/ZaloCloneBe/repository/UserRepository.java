@@ -47,6 +47,16 @@ public interface UserRepository extends JpaRepository<User,Long> {
     where u.id = :userId
 """)
     void unlockUser(@Param("userId") Long userId);
+    @Query("""
+    SELECT u FROM User u
+    WHERE LOWER(u.firstname) LIKE LOWER(CONCAT('%', :key, '%'))
+       OR LOWER(u.lastname)  LIKE LOWER(CONCAT('%', :key, '%'))
+       OR u.phone            LIKE CONCAT('%', :key, '%')
+""")
+    Page<User> searchCustomer(
+            @Param("key") String key,
+            Pageable pageable
+    );
 
 
 }
