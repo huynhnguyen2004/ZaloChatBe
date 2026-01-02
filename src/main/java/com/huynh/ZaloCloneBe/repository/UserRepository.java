@@ -1,5 +1,6 @@
 package com.huynh.ZaloCloneBe.repository;
 
+import com.huynh.ZaloCloneBe.dto.response.UserGrowthResponse;
 import com.huynh.ZaloCloneBe.entity.User;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,6 +65,43 @@ Select u from User u
 where u.status=:status and u.role='Customer'
 """)
     Page<User>filterCustomer(@Param("status")Boolean status,Pageable pageable);
+    long countByRole(String role);
+    long countByRoleAndStatusTrue(String role);
+    long countByRoleAndStatusFalse(String role);
+    long countByRoleAndOnlineTrue(String role);
 
+    @Query("""
+    SELECT COUNT(u)
+    FROM User u
+    WHERE u.role='Customer' and
+    u.createdAt >= :start
+      AND u.createdAt < :end
+""")
+    long countNewUsers(@Param("start") Date start,
+                       @Param("end") Date end);
+
+
+    @Query("""
+    SELECT new com.huynh.ZaloCloneBe.dto.response.UserGrowthResponse(
+        FUNCTION('FORMAT', u.createdAt, 'yyyy-MM-dd'),
+        COUNT(u.id)
+    )
+    FROM User u
+    WHERE u.role='Customer'
+    GROUP BY FUNCTION('FORMAT', u.createdAt, 'yyyy-MM-dd')
+    ORDER BY FUNCTION('FORMAT', u.createdAt, 'yyyy-MM-dd')
+""")
+    List<UserGrowthResponse> dailyGrowth();
+    @Query("""
+    SELECT new com.huynh.ZaloCloneBe.dto.response.UserGrowthResponse(
+        FUNCTION('FORMAT', u.createdAt, 'yyyy-MM'),
+        COUNT(u.id)
+    )
+    FROM User u
+    WHERE u.role='Customer'
+    GROUP BY FUNCTION('FORMAT', u.createdAt, 'yyyy-MM')
+    ORDER BY FUNCTION('FORMAT', u.createdAt, 'yyyy-MM')
+""")
+    List<UserGrowthResponse> monthlyGrowth();
 
 }

@@ -24,10 +24,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class  UserService {
@@ -282,6 +279,30 @@ public class  UserService {
                 ()->new AppException(ErrorCode.USER_NOTFOUND)
         );
         return mapper.toDto(user);
+    }
+    public AdminDashBoardResponse getStatistic() {
+
+
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        Date todayStart = cal.getTime();
+
+        Calendar endCal = (Calendar) cal.clone();
+        endCal.add(Calendar.DAY_OF_MONTH, 1);
+        Date todayEnd = endCal.getTime();
+
+        return AdminDashBoardResponse.builder()
+                .totalUsers(repository.countByRole("Customer"))
+                .activeUsers(repository.countByRoleAndStatusTrue("Customer"))
+                .lockedUsers(repository.countByRoleAndStatusFalse("Customer"))
+                .onlineUsers(repository.countByRoleAndOnlineTrue("Customer"))
+                .newUsers(repository.countNewUsers(todayStart, todayEnd))
+                .dailyGrowth(repository.dailyGrowth())
+                .monthlyGrowth(repository.monthlyGrowth())
+                .build();
     }
 
 
