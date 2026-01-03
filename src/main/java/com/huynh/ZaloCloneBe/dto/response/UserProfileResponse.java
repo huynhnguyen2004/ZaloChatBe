@@ -20,5 +20,6 @@ public class UserProfileResponse {
     private String coverUrl;
     private String lastname;
     private Boolean online;
+    private Date lastOnline;
     private RelationshipStatus relationshipStatus;
 }

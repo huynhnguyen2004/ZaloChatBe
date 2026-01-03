@@ -22,5 +22,6 @@ public class ConversationItemResponse {
     private String lastReadMessageContent;
     private Boolean isReadLastContent;
     private Long userIdLastMessage;
+    private Date lastOnline;
     private Date createdAt;
 }

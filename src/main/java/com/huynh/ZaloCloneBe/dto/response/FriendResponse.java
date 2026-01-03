@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,4 +18,5 @@ public class FriendResponse {
     private Boolean online;
     private String avatarUrl;
     private String phone;
+    private Date lastOnline;
 }

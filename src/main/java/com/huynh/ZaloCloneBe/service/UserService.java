@@ -75,6 +75,7 @@ public class  UserService {
         user.setCreatedAt(new Date());
         user.setRole("Customer");
         user.setStatus(true);
+        user.setLastOnline(null);
         User saved = repository.save(user);
         return mapper.toDto(saved);
     }

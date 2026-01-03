@@ -63,6 +63,7 @@ public class ConvertionMemberService {
                             .createdAt(
                                     lastMsg != null ? lastMsg.getCreatedAt() : null
                             )
+                            .lastOnline(friend.getLastOnline())
                             .build();
 
                 })

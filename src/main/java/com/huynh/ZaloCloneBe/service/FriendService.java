@@ -35,6 +35,7 @@ public class FriendService {
                             .online(friend.isOnline())
                             .avatarUrl(friend.getAvatarUrl())
                             .phone(friend.getPhone())
+                            .lastOnline(friend.getLastOnline())
                             .build();
                 })
                 .toList();

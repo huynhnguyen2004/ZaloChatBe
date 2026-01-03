@@ -41,6 +41,7 @@ public class AuthenticationService {
     public UserResponse updataStatus(Long id) throws Exception{
         User user=repository.findById(id).orElseThrow(()->new AppException(ErrorCode.USER_NOTFOUND));
         user.setOnline(false);
+        user.setLastOnline(new Date());
         User saved=repository.save(user);
         return userMapper.toDto(saved);
     }
@@ -66,6 +67,7 @@ public class AuthenticationService {
         }
         failCount.remove(request.getPhone());
         user.setOnline(true);
+        user.setLastOnline(null);
         User saved=repository.save(user);
         UserResponse userResponse = userMapper.toDto(saved);
         String token = generateToken(user.getPhone());
