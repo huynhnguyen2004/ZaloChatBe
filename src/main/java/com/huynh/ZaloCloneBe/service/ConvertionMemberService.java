@@ -44,7 +44,7 @@ public class ConvertionMemberService {
                             messageRepository.findTopByConversation_IdOrderByCreatedAtDesc(c.getId());
 
                     Message lastMsg = lastMsgOpt.orElse(null);
-                    Boolean isRead=lastMsg.isRead();
+                    Boolean isRead = lastMsg != null ? lastMsg.isRead() : true;
                     return ConversationItemResponse.builder()
                             .conversationId(c.getId())
                             .type(c.getType())
