@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -14,4 +16,6 @@ public class UserRequest {
     private String password;
     private String firstname;
     private String lastname;
+    private Date birthday;
+    private int gender;
 }

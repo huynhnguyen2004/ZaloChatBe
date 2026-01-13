@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 public class MessageResponse {
     private Long id;
     private Long senderId;
-    private Long receiverId;
+    private Long conversationId;
     private String content;
     private String createdAt;
-    private boolean isRead;
+    private boolean read;
 }

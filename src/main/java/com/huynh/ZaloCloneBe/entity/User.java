@@ -20,9 +20,14 @@ public class User {
     private String firstname;
     private String password;
     private String phone;
+    private Integer gender;
+    private Date birthday;
     private String avatarUrl;
+    private String coverUrl;
     private String lastname;
     private boolean online;
     private Date createdAt;
     private String role;
+    private Boolean status;
+    private Date lastOnline;
 }

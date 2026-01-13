@@ -23,11 +23,18 @@ public class MessageController {
                 .build();
     }
     @GetMapping
-    public ApiResponse<List<MessageResponse>> getMessages(@RequestParam Long currentUserId,@RequestParam Long id){
+    public ApiResponse<List<MessageResponse>> getMessages(@RequestParam Long conversationId){
         return ApiResponse.<List<MessageResponse>>builder()
                 .code(1001)
-                .result(service.getMessages(currentUserId,id))
+                .result(service.getMessages(conversationId))
                 .build();
     }
+    @PostMapping("/read")
+    public void markAsRead(@RequestParam Long conversationId,
+                           @RequestParam Long userId) {
+        service.markAsRead(conversationId, userId);
+    }
+
+
 
 }

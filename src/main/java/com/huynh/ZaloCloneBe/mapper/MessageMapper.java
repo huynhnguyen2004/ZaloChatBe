@@ -12,7 +12,7 @@ public interface MessageMapper {
     Message toEntity(MessageRequest request);
     @Mapping(target ="id",source = "id")
     @Mapping(target ="senderId",source = "sender.id")
-    @Mapping(target ="receiverId",source = "receiver.id")
+    @Mapping(target="conversationId",source="conversation.id")
     @Mapping(target ="content",source = "content")
     @Mapping(target ="createdAt",source = "createdAt")
     MessageResponse toDto(Message message);

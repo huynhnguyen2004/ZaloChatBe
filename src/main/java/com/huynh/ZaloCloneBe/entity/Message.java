@@ -15,11 +15,10 @@ public class Message {
     @ManyToOne
     @JoinColumn(name = "sender_id")
     private User sender;
-
-    @ManyToOne
-    @JoinColumn(name = "receiver_id")
-    private User receiver;
     private String content;
     private Date createdAt;
     private boolean isRead;
+    @ManyToOne
+    @JoinColumn(name="conversation_id")
+    private Conversation conversation;
 }

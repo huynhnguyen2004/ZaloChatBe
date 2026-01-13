@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class ListSendFriendResponse {
     private Long id;
-    private Long senderId;     //
+    private Long senderId;
     private String senderName;
     private String phone;
 }

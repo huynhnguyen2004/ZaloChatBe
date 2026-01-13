@@ -15,6 +15,7 @@ import com.huynh.ZaloCloneBe.mapper.FriendRequestMapper;
 import com.huynh.ZaloCloneBe.repository.FriendRepository;
 import com.huynh.ZaloCloneBe.repository.FriendRequestRepository;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,13 +48,13 @@ public class FriendRequestService {
 
     public SendFriendResponse sendRequest(SendFriendRequest request) {
 
-        if (friendRepository.existsByUser1IdAndUser2Id(request.getSenderId(), request.getReceiverId())) {
+        if (friendRepository.existsFriend(request.getSenderId(), request.getReceiverId())) {
             throw new AppException(ErrorCode.FRIEND_ALREADY);
         }
-        if (repository.existsBySenderIdAndReceiverId(request.getSenderId(), request.getReceiverId())) {
+        if (repository.existsBySenderIdAndReceiverIdAndStatus(request.getSenderId(), request.getReceiverId(),StatusRequest.PENDING)) {
             throw new AppException(ErrorCode.SEND_REQUEST_ERROR);
         }
-        if (repository.existsBySenderIdAndReceiverId(request.getReceiverId(), request.getSenderId())) {
+        if (repository.existsBySenderIdAndReceiverIdAndStatus(request.getReceiverId(), request.getSenderId(),StatusRequest.PENDING)) {
             throw new AppException(ErrorCode.SEND_REQUEST_ERROR);
         }
         if (request.getSenderId().equals(request.getReceiverId())) {
@@ -81,26 +82,28 @@ public class FriendRequestService {
         return response;
     }
 
-    public AcceptedFriendResponse acceptedFriend(Long id) {
-
-        FriendRequest fr = repository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.REQUEST_NOTFOUND));
-
-        if (fr.getStatus() == StatusRequest.ACCEPTED) {
-            throw new AppException(ErrorCode.REQUEST_ALREADY_ACCEPTED);
-        }
+    @Transactional
+    public AcceptedFriendResponse acceptFriend(Long meId, Long otherId) {
+        FriendRequest fr = repository
+                .findBySenderIdAndReceiverIdAndStatus(
+                        otherId,
+                        meId,
+                        StatusRequest.PENDING
+                )
+                .orElseThrow(() ->
+                        new AppException(ErrorCode.REQUEST_ALREADY_ACCEPTED)
+                );
 
         fr.setStatus(StatusRequest.ACCEPTED);
         repository.save(fr);
 
-        User userA = fr.getSender();
-        User userB = fr.getReceiver();
+        User sender = fr.getSender();
+        User receiver = fr.getReceiver();
 
+        User user1 = sender.getId() < receiver.getId() ? sender : receiver;
+        User user2 = sender.getId() < receiver.getId() ? receiver : sender;
 
-        User user1 = (userA.getId() < userB.getId()) ? userA : userB;
-        User user2 = (userA.getId() < userB.getId()) ? userB : userA;
-
-        if (friendRepository.existsByUser1IdAndUser2Id(user1.getId(), user2.getId())) {
+        if (friendRepository.existsFriend(user1.getId(), user2.getId())) {
             throw new AppException(ErrorCode.FRIEND_ALREADY);
         }
 
@@ -109,42 +112,69 @@ public class FriendRequestService {
         friend.setUser2(user2);
         friend.setCreatedAt(new Date());
         friendRepository.save(friend);
-
-
-        FriendResponse resForA = FriendResponse.builder()
+        FriendResponse resForSender = FriendResponse.builder()
                 .id(friend.getId())
-                .friendId(userB.getId())
-                .friendName(userB.getLastname())
-                .phone(userB.getPhone())
-                .avatarUrl(userB.getAvatarUrl())
-                .online(userB.isOnline())
+                .friendId(receiver.getId())
+                .friendName(receiver.getLastname())
+                .phone(receiver.getPhone())
+                .avatarUrl(receiver.getAvatarUrl())
+                .online(receiver.isOnline())
                 .build();
 
-        // 🔥 TẠO DTO FRIEND CHO NGƯỜI NHẬN (B)
-        FriendResponse resForB = FriendResponse.builder()
+        FriendResponse resForReceiver = FriendResponse.builder()
                 .id(friend.getId())
-                .friendId(userA.getId())
-                .friendName(userA.getLastname())
-                .phone(userA.getPhone())
-                .avatarUrl(userA.getAvatarUrl())
-                .online(userA.isOnline())
+                .friendId(sender.getId())
+                .friendName(sender.getLastname())
+                .phone(sender.getPhone())
+                .avatarUrl(sender.getAvatarUrl())
+                .online(sender.isOnline())
                 .build();
+        realTimeService.sendAcceptRealtime(sender.getId(), resForSender);
+        realTimeService.sendFriendUpdateRealtime(sender.getId(), resForSender);
 
-
-        realTimeService.sendAcceptRealtime(userA.getId(), resForA);
-        realTimeService.sendFriendUpdateRealtime(userA.getId(), resForA);
-
-
-        realTimeService.sendAcceptRealtime(userB.getId(), resForB);
-        realTimeService.sendFriendUpdateRealtime(userB.getId(), resForB);
+        realTimeService.sendAcceptRealtime(receiver.getId(), resForReceiver);
+        realTimeService.sendFriendUpdateRealtime(receiver.getId(), resForReceiver);
 
         return AcceptedFriendResponse.builder()
-                .senderId(fr.getSender().getId())
-                .receiverId(fr.getReceiver().getId())
+                .senderId(sender.getId())
+                .receiverId(receiver.getId())
                 .status(fr.getStatus())
                 .createdAt(friend.getCreatedAt())
                 .build();
     }
+
+    public void cancelRequest(Long meId, Long otherId) {
+
+        FriendRequest request = repository
+                .findBySenderIdAndReceiverIdAndStatus(
+                        meId,
+                        otherId,
+                        StatusRequest.PENDING
+                )
+                .orElseThrow(() ->
+                        new AppException(ErrorCode.REQUEST_CANNOT_CANCEL)
+                );
+
+        request.setStatus(StatusRequest.CANCELED);
+        repository.save(request);
+    }
+
+    public void rejectRequest(Long meId, Long otherId) {
+
+        FriendRequest request = repository
+                .findBySenderIdAndReceiverIdAndStatus(
+                        otherId,
+                        meId,
+                        StatusRequest.PENDING
+                )
+                .orElseThrow(() ->
+                        new AppException(ErrorCode.REQUEST_CANNOT_REJECT)
+                );
+
+        request.setStatus(StatusRequest.REJECTED);
+        repository.save(request);
+    }
+
 
 
 }

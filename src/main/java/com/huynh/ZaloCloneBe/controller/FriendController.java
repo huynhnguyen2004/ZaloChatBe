@@ -4,10 +4,7 @@ import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
 import com.huynh.ZaloCloneBe.dto.response.FriendResponse;
 import com.huynh.ZaloCloneBe.service.FriendService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,5 +23,17 @@ public class FriendController {
                 .result(friendService.getAllFriends(id))
                 .build();
     }
+    @DeleteMapping("/unfriend")
+    public ApiResponse<Void> unfriend(
+            @RequestParam Long user1Id,
+            @RequestParam Long user2Id) {
+
+        friendService.unFriend(user1Id, user2Id);
+        return ApiResponse.<Void>builder()
+                .code(1000)
+                .messenge("Hủy kết bạn thành công")
+                .build();
+    }
+
 }
 
