@@ -14,6 +14,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +36,9 @@ public class AuthenticationService {
     private CaptchaService captchaService;
     private final Map<String, Integer> failCount = new ConcurrentHashMap<>();
 
-    private static final String SECRET = "Bgtov/9iSc1HWhK6xD/VnqXcMbcEiRl/vNxT+nLhTICOzNkeY5qu+8eE6fjv7fDh";
+    @Value("${jwt.secret}")
+    private String secret;
+
 
 
     public UserResponse updataStatus(Long id) throws Exception{
@@ -92,7 +95,7 @@ public class AuthenticationService {
                 .build();
 
         SignedJWT signedJWT = new SignedJWT(jwsHeader, payload);
-        signedJWT.sign(new MACSigner(SECRET.getBytes()));
+        signedJWT.sign(new MACSigner(secret.getBytes()));
         return signedJWT.serialize();
     }
 }
