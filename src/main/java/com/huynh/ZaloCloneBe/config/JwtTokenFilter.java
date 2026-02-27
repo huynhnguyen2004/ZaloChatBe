@@ -47,9 +47,9 @@ private UserRepository userRepository;
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
-            String phone =  jwt.getJWTClaimsSet().getSubject();
+            Long userId=  Long.parseLong(jwt.getJWTClaimsSet().getSubject());
 
-            User user = userRepository.findByPhone(phone).orElse(null);
+            User user = userRepository.findById(userId).orElse(null);
             if (user == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
