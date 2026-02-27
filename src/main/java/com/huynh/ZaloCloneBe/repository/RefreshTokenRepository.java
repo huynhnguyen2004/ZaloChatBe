@@ -1,7 +1,9 @@
 package com.huynh.ZaloCloneBe.repository;
 
 import com.huynh.ZaloCloneBe.entity.RefreshToken;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -10,5 +12,7 @@ import java.util.Optional;
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken,String> {
     Optional<RefreshToken> findByIdAndRevokedFalse(String id);
 
+    @Modifying
+    @Transactional
     void deleteByUserId(Long userId);
 }

@@ -85,10 +85,11 @@ public class  UserService {
 
 
         SignedJWT signedJWT = SignedJWT.parse(jwt);
-        String phone = signedJWT.getJWTClaimsSet().getSubject();
+
+        Long userId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
 
 
-        User user = repository.findByPhone(phone)
+        User user = repository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
 
 
