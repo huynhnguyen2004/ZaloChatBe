@@ -1,30 +1,57 @@
 package com.huynh.ZaloCloneBe.controller;
 
+import com.huynh.ZaloCloneBe.config.JwtProperties;
 import com.huynh.ZaloCloneBe.dto.request.AuthenRequest;
 import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
 import com.huynh.ZaloCloneBe.dto.response.AuthenResponse;
+import com.huynh.ZaloCloneBe.dto.response.ResultLogin;
 import com.huynh.ZaloCloneBe.dto.response.UserResponse;
 import com.huynh.ZaloCloneBe.service.AuthenticationService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-    @RequestMapping("/api/auth")
-    public class AuthenController {
-        @Autowired
-        private AuthenticationService authenticationService;
-        @PostMapping("/login")
-        public ApiResponse<AuthenResponse> login(@RequestBody AuthenRequest request) throws Exception {
-            AuthenResponse response = authenticationService.login(request);
+@RequestMapping("/api/auth")
+public class AuthenController {
+    @Autowired
+    private AuthenticationService authenticationService;
+    @Autowired
+    private JwtProperties jwtProperties;
 
-            return ApiResponse.<AuthenResponse>builder()
-                    .code(1001)
-                    .result(response)
-                    .build();
-        }
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<AuthenResponse>> login(@RequestBody AuthenRequest request, HttpServletResponse response) throws Exception {
+        ResultLogin result = authenticationService.login(request);
+
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", result.getRefreshToken())
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/auth/refresh")
+                .maxAge(jwtProperties.getRefreshExpire() / 1000)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        AuthenResponse authenResponse = AuthenResponse.builder()
+                .accessToken(result.getAccessToken())
+                .user(result.getUserResponse())
+                .build();
+        ApiResponse<AuthenResponse> apiResponse =
+                ApiResponse.<AuthenResponse>builder()
+                        .code(1001)
+                        .messenge("Đăng nhập thành công")
+                        .result(authenResponse)
+                        .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
     @PutMapping("/logout/{id}")
-    public ApiResponse<UserResponse> logout(@PathVariable Long id) throws Exception{
+    public ApiResponse<UserResponse> logout(@PathVariable Long id) throws Exception {
         UserResponse result = authenticationService.updataStatus(id);
         return ApiResponse.<UserResponse>builder()
                 .code(1001)
@@ -32,9 +59,6 @@ import org.springframework.web.bind.annotation.*;
                 .result(result)
                 .build();
     }
-
-
-
 
 
 }

@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class AuthenResponse {
-    private String token;
+    private String accessToken;
     private UserResponse user;
 
 }
