@@ -50,13 +50,25 @@ public class AuthenController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @PutMapping("/logout/{id}")
-    public ApiResponse<UserResponse> logout(@PathVariable Long id) throws Exception {
-        UserResponse result = authenticationService.updataStatus(id);
-        return ApiResponse.<UserResponse>builder()
+    @PutMapping("/logout")
+    public ApiResponse<Void> logout( @CookieValue(value = "refresh_token", required = false) String refreshToken,
+                                    HttpServletResponse response) throws Exception {
+        if(refreshToken!=null) {
+            authenticationService.logout(refreshToken);
+        }
+        ResponseCookie clearCookie = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/auth/refresh")
+                .maxAge(0)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
+
+        return ApiResponse.<Void>builder()
                 .code(1001)
                 .messenge("cap nhat offline thanh cong")
-                .result(result)
                 .build();
     }
 

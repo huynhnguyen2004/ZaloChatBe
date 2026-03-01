@@ -16,8 +16,10 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -95,12 +97,30 @@ public class AuthenticationService {
         return signedJWT.serialize();
     }
 
-    public UserResponse updataStatus(Long id) throws Exception{
-        User user=repository.findById(id).orElseThrow(()->new AppException(ErrorCode.USER_NOTFOUND));
+    public Long extractUserIdFromRefreshToken(String refreshToken) throws Exception {
+        SignedJWT jwt = SignedJWT.parse(refreshToken);
+
+        if (!jwt.verify(new MACVerifier(jwtProperties.getSecret()))) {
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+
+        Date expiry = jwt.getJWTClaimsSet().getExpirationTime();
+        if (expiry.before(new Date())) {
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+        }
+
+
+        return Long.parseLong(jwt.getJWTClaimsSet().getSubject());
+    }
+    @Transactional
+    public void logout(String refreshToken) throws Exception{
+        Long userId=extractUserIdFromRefreshToken(refreshToken);
+        User user=repository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOTFOUND));
         user.setOnline(false);
         user.setLastOnline(new Date());
+        refreshTokenRepository.revokeByToken(refreshToken);
         User saved=repository.save(user);
-        return userMapper.toDto(saved);
+
     }
     public ResultLogin login(AuthenRequest request) throws Exception {
         int failed = failCount.getOrDefault(request.getPhone(), 0);
@@ -127,9 +147,6 @@ public class AuthenticationService {
         user.setLastOnline(null);
         User saved=repository.save(user);
         UserResponse userResponse = userMapper.toDto(saved);
-
-        refreshTokenRepository.deleteByUserId(saved.getId());
-
 
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(saved)

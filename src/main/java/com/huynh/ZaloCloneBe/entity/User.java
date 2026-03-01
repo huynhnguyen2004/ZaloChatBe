@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -30,4 +31,6 @@ public class User {
     private String role;
     private Boolean status;
     private Date lastOnline;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<RefreshToken> refreshTokens;
 }
