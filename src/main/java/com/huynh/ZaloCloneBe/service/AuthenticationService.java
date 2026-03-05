@@ -71,13 +71,12 @@ public class AuthenticationService {
         return signedJWT.serialize();
     }
 
-    public String generateRefreshToken(User user, String refreshTokenId) throws Exception {
+    public String generateRefreshToken(User user) throws Exception {
 
         JWSHeader header=new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getId().toString())
-                .jwtID(refreshTokenId)
                 .issueTime(new Date())
                 .expirationTime(
                         new Date(System.currentTimeMillis() + jwtProperties.getRefreshExpire())
@@ -109,17 +108,28 @@ public class AuthenticationService {
             throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
 
+        RefreshToken tokenEntity = refreshTokenRepository.findByToken(refreshToken).orElseThrow(
+                ()->new AppException(ErrorCode.TOKEN_NOTFOUND)
+        );
 
-        return Long.parseLong(jwt.getJWTClaimsSet().getSubject());
+
+        Long userId = tokenEntity.getUser().getId();
+
+        return userId;
     }
     @Transactional
     public void logout(String refreshToken) throws Exception{
-        Long userId=extractUserIdFromRefreshToken(refreshToken);
+        RefreshToken tokenEntity = refreshTokenRepository.findByToken(refreshToken).orElseThrow(
+                ()->new AppException(ErrorCode.TOKEN_NOTFOUND)
+        );
+
+
+        Long userId = tokenEntity.getUser().getId();
         User user=repository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOTFOUND));
         user.setOnline(false);
         user.setLastOnline(new Date());
         refreshTokenRepository.revokeByToken(refreshToken);
-        User saved=repository.save(user);
+        repository.save(user);
 
     }
     public ResultLogin login(AuthenRequest request) throws Exception {
@@ -156,10 +166,11 @@ public class AuthenticationService {
                 .revoked(false)
                 .build();
 
-        RefreshToken savedToken = refreshTokenRepository.save(refreshToken);
 
         String accessToken = generateAccessToken(saved);
-        String refreshTokenJwt = generateRefreshToken(saved, savedToken.getId());
+        String refreshTokenJwt = generateRefreshToken(saved);
+        refreshToken.setToken(refreshTokenJwt);
+        RefreshToken savedToken = refreshTokenRepository.save(refreshToken);
 
         return ResultLogin.builder()
                 .accessToken(accessToken)

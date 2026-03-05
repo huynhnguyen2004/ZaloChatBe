@@ -34,7 +34,6 @@ public interface UserRepository extends JpaRepository<User,Long> {
             """)
     Page<User> findAllCustomer(Pageable pageable);
     @Modifying
-    @Transactional
     @Query("""
     update User u
     set u.status = false
@@ -42,7 +41,6 @@ public interface UserRepository extends JpaRepository<User,Long> {
 """)
     void lockUser(@Param("userId") Long userId);
     @Modifying
-    @Transactional
     @Query("""
     update User u
     set u.status = true

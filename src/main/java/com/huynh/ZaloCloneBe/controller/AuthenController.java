@@ -31,7 +31,7 @@ public class AuthenController {
                 .httpOnly(true)
                 .secure(false)
                 .sameSite("Lax")
-                .path("/auth/refresh")
+                .path("/")
                 .maxAge(jwtProperties.getRefreshExpire() / 1000)
                 .build();
 
@@ -60,7 +60,7 @@ public class AuthenController {
                 .httpOnly(true)
                 .secure(false)
                 .sameSite("Lax")
-                .path("/auth/refresh")
+                .path("/")
                 .maxAge(0)
                 .build();
 

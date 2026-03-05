@@ -23,7 +23,7 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
             """)
     boolean existsFriend(@Param("a") Long a, @Param("b") Long b);
 
-    @Transactional
+
     @Modifying
     @Query("""
                 Delete from Friend f

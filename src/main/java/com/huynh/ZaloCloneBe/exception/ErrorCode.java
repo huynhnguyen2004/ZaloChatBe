@@ -32,7 +32,8 @@ public enum ErrorCode {
     USER_ALREADY_LOCKED(1022,"Tài khoản đã khóa rồi"),
     USER_ALREADY_ACTIVE(1023,"Tài khoản này đã mở rồi"),
     TOKEN_INVALID(1024,"token khong hop le"),
-    TOKEN_EXPIRED(1025,"token het han")
+    TOKEN_EXPIRED(1025,"token het han"),
+    TOKEN_NOTFOUND(1026,"TOKEN NOT FOUND")
 
     ;
 

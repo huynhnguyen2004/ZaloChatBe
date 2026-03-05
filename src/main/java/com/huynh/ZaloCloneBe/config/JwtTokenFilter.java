@@ -1,4 +1,5 @@
 package com.huynh.ZaloCloneBe.config;
+import com.huynh.ZaloCloneBe.dto.response.UserPrincipal;
 import com.huynh.ZaloCloneBe.entity.User;
 import com.huynh.ZaloCloneBe.exception.AppException;
 import com.huynh.ZaloCloneBe.exception.ErrorCode;
@@ -78,8 +79,15 @@ private JwtProperties jwtProperties;
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }
+            UserPrincipal userPrincipal=UserPrincipal.builder()
+                    .id(user.getId())
+                    .firstname(user.getFirstname())
+                    .lastname(user.getLastname())
+                    .phone(user.getPhone())
+                    .role(user.getRole())
+                    .build();
             UsernamePasswordAuthenticationToken authenticationToken=new UsernamePasswordAuthenticationToken(
-                    user,null, List.of(new SimpleGrantedAuthority("ROLE_"+user.getRole()))
+                    userPrincipal,null, List.of(new SimpleGrantedAuthority("ROLE_"+userPrincipal.getRole()))
             );
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 

@@ -6,6 +6,7 @@ import com.huynh.ZaloCloneBe.entity.User;
 import com.huynh.ZaloCloneBe.exception.AppException;
 import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import com.huynh.ZaloCloneBe.repository.FriendRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +41,7 @@ public class FriendService {
                 })
                 .toList();
     }
+    @Transactional
    public void unFriend(Long user1Id,Long user2Id){
         boolean isFriend= friendRepository.existsFriend(user1Id, user2Id);
         if(!isFriend){
