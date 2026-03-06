@@ -96,27 +96,6 @@ public class AuthenticationService {
         return signedJWT.serialize();
     }
 
-    public Long extractUserIdFromRefreshToken(String refreshToken) throws Exception {
-        SignedJWT jwt = SignedJWT.parse(refreshToken);
-
-        if (!jwt.verify(new MACVerifier(jwtProperties.getSecret()))) {
-            throw new AppException(ErrorCode.TOKEN_INVALID);
-        }
-
-        Date expiry = jwt.getJWTClaimsSet().getExpirationTime();
-        if (expiry.before(new Date())) {
-            throw new AppException(ErrorCode.TOKEN_EXPIRED);
-        }
-
-        RefreshToken tokenEntity = refreshTokenRepository.findByToken(refreshToken).orElseThrow(
-                ()->new AppException(ErrorCode.TOKEN_NOTFOUND)
-        );
-
-
-        Long userId = tokenEntity.getUser().getId();
-
-        return userId;
-    }
     @Transactional
     public void logout(String refreshToken) throws Exception{
         RefreshToken tokenEntity = refreshTokenRepository.findByToken(refreshToken).orElseThrow(
@@ -175,7 +154,49 @@ public class AuthenticationService {
         return ResultLogin.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshTokenJwt)
-                .userResponse(userResponse)
+                .build();
+    }
+    @Transactional
+    public ResultLogin refresh(String refreshToken) throws Exception{
+        SignedJWT jwt=SignedJWT.parse(refreshToken);
+
+        if(!jwt.verify(new MACVerifier(jwtProperties.getSecret()))){
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+
+        Date expiry=jwt.getJWTClaimsSet().getExpirationTime();
+
+        if(expiry.before(new Date())){
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+        }
+
+        RefreshToken refreshTokenEntity=refreshTokenRepository.findByToken(refreshToken)
+                        .orElseThrow(()->new AppException(ErrorCode.TOKEN_NOTFOUND));
+
+        if(refreshTokenEntity.getRevoked()){
+            throw new AppException(ErrorCode.TOKEN_REVOKED);
+        }
+        User user=refreshTokenEntity.getUser();
+
+        refreshTokenEntity.setRevoked(true);
+        refreshTokenRepository.save(refreshTokenEntity);
+
+        String newAccess=generateAccessToken(user);
+
+        String newRefresh=generateRefreshToken(user);
+
+        RefreshToken refreshToken1=RefreshToken.builder()
+                .token(newRefresh)
+                .user(user)
+                .expiresAt(
+                        new Date(System.currentTimeMillis()+jwtProperties.getRefreshExpire())
+                )
+                .revoked(false)
+                .build();
+        refreshTokenRepository.save(refreshToken1);
+        return ResultLogin.builder()
+                .accessToken(newAccess)
+                .refreshToken(newRefresh)
                 .build();
     }
 

@@ -9,5 +9,5 @@ import lombok.Data;
 public class ResultLogin {
     private String accessToken;
     private String refreshToken;
-    private UserResponse userResponse;
+
 }

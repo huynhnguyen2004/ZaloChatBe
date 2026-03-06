@@ -38,7 +38,6 @@ public class AuthenController {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         AuthenResponse authenResponse = AuthenResponse.builder()
                 .accessToken(result.getAccessToken())
-                .user(result.getUserResponse())
                 .build();
         ApiResponse<AuthenResponse> apiResponse =
                 ApiResponse.<AuthenResponse>builder()

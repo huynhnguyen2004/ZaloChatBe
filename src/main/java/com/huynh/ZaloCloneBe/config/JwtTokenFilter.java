@@ -1,4 +1,5 @@
 package com.huynh.ZaloCloneBe.config;
+
 import com.huynh.ZaloCloneBe.dto.response.UserPrincipal;
 import com.huynh.ZaloCloneBe.entity.User;
 import com.huynh.ZaloCloneBe.exception.AppException;
@@ -25,10 +26,10 @@ import java.util.List;
 @Component
 public class JwtTokenFilter extends OncePerRequestFilter {
 
-@Autowired
-private UserRepository userRepository;
-@Autowired
-private JwtProperties jwtProperties;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private JwtProperties jwtProperties;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -47,7 +48,7 @@ private JwtProperties jwtProperties;
 
         try {
             SignedJWT jwt = SignedJWT.parse(token);
-            if(!jwt.verify(new MACVerifier(jwtProperties.getSecret()))){
+            if (!jwt.verify(new MACVerifier(jwtProperties.getSecret()))) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("""
                          {
@@ -60,14 +61,16 @@ private JwtProperties jwtProperties;
 
             if (expiry.before(new Date())) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
                 response.getWriter().write("""
                          {
                                   "message": "TOKEN_EXPIRED"
                                 }
                         """);
+
                 return;
             }
-            Long userId=  Long.parseLong(jwt.getJWTClaimsSet().getSubject());
+            Long userId = Long.parseLong(jwt.getJWTClaimsSet().getSubject());
 
             User user = userRepository.findById(userId).orElse(null);
             if (user == null) {
@@ -77,22 +80,33 @@ private JwtProperties jwtProperties;
 
             if (!user.getStatus()) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("""
+                        {
+                           "message": "USER_NOT_FOUND"
+                        }
+                        """);
                 return;
             }
-            UserPrincipal userPrincipal=UserPrincipal.builder()
+            UserPrincipal userPrincipal = UserPrincipal.builder()
                     .id(user.getId())
                     .firstname(user.getFirstname())
                     .lastname(user.getLastname())
                     .phone(user.getPhone())
                     .role(user.getRole())
                     .build();
-            UsernamePasswordAuthenticationToken authenticationToken=new UsernamePasswordAuthenticationToken(
-                    userPrincipal,null, List.of(new SimpleGrantedAuthority("ROLE_"+userPrincipal.getRole()))
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                    userPrincipal, null, List.of(new SimpleGrantedAuthority("ROLE_" + userPrincipal.getRole()))
             );
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("""
+                        {
+                            "message": "TOKEN_INVALID"
+                        }
+                    """);
             return;
         }
 
