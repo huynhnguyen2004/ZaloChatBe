@@ -19,7 +19,7 @@ public class FriendController {
     public ApiResponse<List<FriendResponse>> getFriends(@RequestParam Long id) {
         return ApiResponse.<List<FriendResponse>>builder()
                 .code(1000)
-                .messenge("Lấy danh sách bạn bè thành công")
+                .message("Lấy danh sách bạn bè thành công")
                 .result(friendService.getAllFriends(id))
                 .build();
     }
@@ -31,7 +31,7 @@ public class FriendController {
         friendService.unFriend(user1Id, user2Id);
         return ApiResponse.<Void>builder()
                 .code(1000)
-                .messenge("Hủy kết bạn thành công")
+                .message("Hủy kết bạn thành công")
                 .build();
     }
 

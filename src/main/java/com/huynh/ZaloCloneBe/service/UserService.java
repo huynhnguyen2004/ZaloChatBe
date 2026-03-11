@@ -40,11 +40,27 @@ public class  UserService {
     private FileService fileService;
     @Autowired
     private FriendRequestRepository friendRequestRepository;
+
     public  boolean hasSpecialCharacter(String password) {
         if (password == null) return false;
         return password.matches(".*[^a-zA-Z0-9].*");
     }
+    public UserResponse getCurrentUser(String token) throws Exception {
 
+        String jwt = token.substring(7);
+
+
+        SignedJWT signedJWT = SignedJWT.parse(jwt);
+
+        Long userId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
+
+
+        User user = repository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+
+
+        return mapper.toDto(user);
+    }
     public PageResponse<UserResponse>getCustomer(int page,int size){
         Pageable pageable= PageRequest.of(page,size, Sort.by("lastname").ascending());
         Page<User>userPage=repository.findAllCustomer(pageable);
@@ -62,38 +78,6 @@ public class  UserService {
                 .last(userPage.isLast())
                 .build();
 
-    }
-    public UserResponse createUser(UserRequest request){
-        if(repository.existsByPhone(request.getPhone())){
-            throw new AppException(ErrorCode.USER_EXISTED);
-        }
-        if(hasSpecialCharacter(request.getPassword())||request.getPassword().length()<6){
-            throw new AppException(ErrorCode.PASS_VALID);
-        }
-        User user=mapper.toEntity(request);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setCreatedAt(new Date());
-        user.setRole("Customer");
-        user.setStatus(true);
-        user.setLastOnline(null);
-        User saved = repository.save(user);
-        return mapper.toDto(saved);
-    }
-    public UserResponse getCurrentUser(String token) throws Exception {
-
-        String jwt = token.substring(7);
-
-
-        SignedJWT signedJWT = SignedJWT.parse(jwt);
-
-        Long userId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
-
-
-        User user = repository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
-
-
-        return mapper.toDto(user);
     }
     public List<SearchResponse>search(Long userId, String key){
         repository.findById(userId).orElseThrow(()-> new AppException(ErrorCode.USER_NOTFOUND));

@@ -15,28 +15,22 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
-   @Autowired
+    @Autowired
     private UserService service;
-   @Autowired
-   private FileService fileService;
-   @PostMapping("/register")
-   public ApiResponse<UserResponse>createUser(@RequestBody UserRequest request){
-       return ApiResponse.<UserResponse>builder()
-               .code(1001)
-               .messenge("Tạo user thành công")
-               .result(service.createUser(request))
-               .build();
-   }
+    @Autowired
+    private FileService fileService;
+
     @GetMapping("/me")
     public ApiResponse<UserResponse> getCurrentUser(@RequestHeader("Authorization") String token) throws Exception {
         UserResponse userResponse = service.getCurrentUser(token);
 
         return ApiResponse.<UserResponse>builder()
                 .code(1001)
-                .messenge("Lấy thông tin người dùng hiện tại thành công")
+                .message("Lấy thông tin người dùng hiện tại thành công")
                 .result(userResponse)
                 .build();
     }
+
     @GetMapping("/search")
     public ApiResponse<List<SearchResponse>> search(
             @RequestParam Long userId,
@@ -44,42 +38,45 @@ public class UserController {
 
         return ApiResponse.<List<SearchResponse>>builder()
                 .code(1001)
-                .messenge("Tìm kiếm thành công")
+                .message("Tìm kiếm thành công")
                 .result(service.search(userId, key))
                 .build();
     }
-    @PostMapping( "/uploads/avatar")
+
+    @PostMapping("/uploads/avatar")
     public ApiResponse<UserResponse> uploadAvatar(
             @RequestParam("file") MultipartFile file,
             @RequestParam Long userId
     ) throws Exception {
 
-        String avatarUrl = fileService.uploadAvatar(file,userId);
+        String avatarUrl = fileService.uploadAvatar(file, userId);
 
 
         return ApiResponse.<UserResponse>builder()
                 .code(1001)
-                .messenge("thêm ảnh đại diện thành công")
+                .message("thêm ảnh đại diện thành công")
                 .result(service.updateAvatar(userId, avatarUrl))
                 .build();
 
     }
-    @PostMapping( "/uploads/cover")
+
+    @PostMapping("/uploads/cover")
     public ApiResponse<UserResponse> uploadCover(
             @RequestParam("file") MultipartFile file,
             @RequestParam Long userId
     ) throws Exception {
 
-        String coverUrl = fileService.uploadCover(file,userId);
+        String coverUrl = fileService.uploadCover(file, userId);
 
 
         return ApiResponse.<UserResponse>builder()
                 .code(1001)
-                .messenge("thêm ảnh bìa  thành công")
+                .message("thêm ảnh bìa thành công")
                 .result(service.updateCover(userId, coverUrl))
                 .build();
 
     }
+
     @PutMapping("/editInfor")
     public ApiResponse<UserResponse> updateProfile(
             @RequestParam Long userId,
@@ -87,10 +84,11 @@ public class UserController {
     ) {
         return ApiResponse.<UserResponse>builder()
                 .code(1001)
-                .messenge("Sua thong tin thanh cong")
-                .result(service.updateProfile(userId,request))
+                .message("Sua thong tin thanh cong")
+                .result(service.updateProfile(userId, request))
                 .build();
     }
+
     @PutMapping("/editPass")
     public ApiResponse<UpdatePasswordResponse> updateProfile(
             @RequestParam Long userId,
@@ -98,82 +96,85 @@ public class UserController {
     ) {
         return ApiResponse.<UpdatePasswordResponse>builder()
                 .code(1001)
-                .messenge("Đổi mật khẩu thanh cong")
-                .result(service.updatePassWord(userId,request))
+                .message("Đổi mật khẩu thanh cong")
+                .result(service.updatePassWord(userId, request))
                 .build();
     }
+
     @GetMapping("/seen")
     public ApiResponse<UserProfileResponse> viewUserProfile(
-           @RequestParam Long meId,
-           @RequestParam Long otherId
+            @RequestParam Long meId,
+            @RequestParam Long otherId
     ) {
         return ApiResponse.<UserProfileResponse>builder()
                 .code(1001)
-                .messenge("Xem trang cá nhân")
+                .message("Xem trang cá nhân")
                 .result(service.getUserProfile(meId, otherId))
                 .build();
     }
+
     @GetMapping("/customer")
-    public ApiResponse<PageResponse<UserResponse>>getAllCustomer(
+    public ApiResponse<PageResponse<UserResponse>> getAllCustomer(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
 
-    ){
-       return ApiResponse.<PageResponse<UserResponse>>builder()
-               .code(1001)
-               .messenge("Lay danh sach khach hang thanh cong")
-               .result(service.getCustomer(page,size))
-               .build();
+    ) {
+        return ApiResponse.<PageResponse<UserResponse>>builder()
+                .code(1001)
+                .message("Lay danh sach khach hang thanh cong")
+                .result(service.getCustomer(page, size))
+                .build();
     }
+
     @PutMapping("/lock")
     public ApiResponse<Void> lock(@RequestParam Long userId) {
         service.lockUser(userId);
         return ApiResponse.<Void>builder()
                 .code(1001)
-                .messenge("Đã khóa thành công")
+                .message("Đã khóa thành công")
                 .build();
     }
+
     @PutMapping("/unlock")
     public ApiResponse<Void> unlock(@RequestParam Long userId) {
         service.unlockUser(userId);
         return ApiResponse.<Void>builder()
                 .code(1001)
-                .messenge("Đã kích hoạt thành công")
+                .message("Đã kích hoạt thành công")
                 .build();
     }
-    @GetMapping("/search/customer")
-    public ApiResponse<PageResponse<UserResponse>>searchCustomer(@RequestParam String key,
-                                                                 @RequestParam(defaultValue = "0") int page,
-                                                                 @RequestParam(defaultValue = "5")int size){
 
-       return ApiResponse.<PageResponse<UserResponse>>builder()
-               .code(1001)
-               .messenge("tim kiem khach hang thanh cong")
-               .result(service.searchCustomer(key,page,size))
-               .build();
-    }
-    @GetMapping("/filter/status")
-    public ApiResponse<PageResponse<UserResponse>>filterCustomer(@RequestParam Boolean status,
-                                                                 @RequestParam(defaultValue = "0")int page,
-                                                                 @RequestParam(defaultValue = "5") int size){
+    @GetMapping("/search/customer")
+    public ApiResponse<PageResponse<UserResponse>> searchCustomer(@RequestParam String key,
+                                                                  @RequestParam(defaultValue = "0") int page,
+                                                                  @RequestParam(defaultValue = "5") int size) {
+
         return ApiResponse.<PageResponse<UserResponse>>builder()
                 .code(1001)
-                .messenge("loc khach hang thanh cong")
-                .result(service.filterCustomer(status,page,size))
+                .message("tim kiem khach hang thanh cong")
+                .result(service.searchCustomer(key, page, size))
                 .build();
     }
-    @GetMapping("/detail")
-    public ApiResponse<UserResponse>getDetailUser(@RequestParam Long userId){
-       return ApiResponse.<UserResponse>builder()
-               .code(1001)
-               .messenge("lay chi tiet khach hang thanh cong")
-               .result(service.getUserDetail(userId))
-               .build();
+
+    @GetMapping("/filter/status")
+    public ApiResponse<PageResponse<UserResponse>> filterCustomer(@RequestParam Boolean status,
+                                                                  @RequestParam(defaultValue = "0") int page,
+                                                                  @RequestParam(defaultValue = "5") int size) {
+        return ApiResponse.<PageResponse<UserResponse>>builder()
+                .code(1001)
+                .message("loc khach hang thanh cong")
+                .result(service.filterCustomer(status, page, size))
+                .build();
     }
 
-
-
-
+    @GetMapping("/detail")
+    public ApiResponse<UserResponse> getDetailUser(@RequestParam Long userId) {
+        return ApiResponse.<UserResponse>builder()
+                .code(1001)
+                .message("lay chi tiet khach hang thanh cong")
+                .result(service.getUserDetail(userId))
+                .build();
+    }
 
 
 }

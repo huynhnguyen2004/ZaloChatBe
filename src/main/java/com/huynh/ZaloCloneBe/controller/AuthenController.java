@@ -2,6 +2,7 @@ package com.huynh.ZaloCloneBe.controller;
 
 import com.huynh.ZaloCloneBe.config.JwtProperties;
 import com.huynh.ZaloCloneBe.dto.request.AuthenRequest;
+import com.huynh.ZaloCloneBe.dto.request.UserRequest;
 import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
 import com.huynh.ZaloCloneBe.dto.response.AuthenResponse;
 import com.huynh.ZaloCloneBe.dto.response.ResultLogin;
@@ -42,7 +43,7 @@ public class AuthenController {
         ApiResponse<AuthenResponse> apiResponse =
                 ApiResponse.<AuthenResponse>builder()
                         .code(1001)
-                        .messenge("Đăng nhập thành công")
+                        .message("Đăng nhập thành công")
                         .result(authenResponse)
                         .build();
 
@@ -67,9 +68,18 @@ public class AuthenController {
 
         return ApiResponse.<Void>builder()
                 .code(1001)
-                .messenge("cap nhat offline thanh cong")
+                .message("cap nhat offline thanh cong")
                 .build();
     }
+    @PostMapping("/register")
+    public ApiResponse<UserResponse>createUser(@RequestBody UserRequest request){
+        return ApiResponse.<UserResponse>builder()
+                .code(1001)
+                .message("Tạo user thành công")
+                .result(authenticationService.createUser(request))
+                .build();
+    }
+
 
 
 }

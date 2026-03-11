@@ -17,7 +17,7 @@ public class AdminController {
     public ApiResponse<AdminDashBoardResponse>getDashBoard(){
         return ApiResponse.<AdminDashBoardResponse>builder()
                 .code(1001)
-                .messenge("lay thong ke thanh cong")
+                .message("lay thong ke thanh cong")
                 .result(service.getStatistic())
                 .build();
     }

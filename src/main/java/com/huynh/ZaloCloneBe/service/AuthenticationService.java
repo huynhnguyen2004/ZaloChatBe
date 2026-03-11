@@ -2,6 +2,7 @@ package com.huynh.ZaloCloneBe.service;
 
 import com.huynh.ZaloCloneBe.config.JwtProperties;
 import com.huynh.ZaloCloneBe.dto.request.AuthenRequest;
+import com.huynh.ZaloCloneBe.dto.request.UserRequest;
 import com.huynh.ZaloCloneBe.dto.response.AuthenResponse;
 import com.huynh.ZaloCloneBe.dto.response.ResultLogin;
 import com.huynh.ZaloCloneBe.dto.response.UserResponse;
@@ -21,19 +22,23 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class AuthenticationService {
 
     @Autowired
     private UserRepository repository;
-
+    @Autowired
+    private UserMapper mapper;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -44,11 +49,12 @@ public class AuthenticationService {
     private JwtProperties jwtProperties;
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
-    private final Map<String, Integer> failCount = new ConcurrentHashMap<>();
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     public String generateAccessToken(User user) throws Exception {
 
-        JWSHeader header=new JWSHeader(JWSAlgorithm.HS512);
+        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getId().toString())
@@ -73,7 +79,7 @@ public class AuthenticationService {
 
     public String generateRefreshToken(User user) throws Exception {
 
-        JWSHeader header=new JWSHeader(JWSAlgorithm.HS512);
+        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getId().toString())
@@ -97,29 +103,25 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public void logout(String refreshToken) throws Exception{
+    public void logout(String refreshToken) throws Exception {
         RefreshToken tokenEntity = refreshTokenRepository.findByToken(refreshToken).orElseThrow(
-                ()->new AppException(ErrorCode.TOKEN_NOTFOUND)
+                () -> new AppException(ErrorCode.TOKEN_NOTFOUND)
         );
 
 
         Long userId = tokenEntity.getUser().getId();
-        User user=repository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOTFOUND));
+        User user = repository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
         user.setOnline(false);
         user.setLastOnline(new Date());
         refreshTokenRepository.revokeByToken(refreshToken);
         repository.save(user);
 
     }
-    public ResultLogin login(AuthenRequest request) throws Exception {
-        int failed = failCount.getOrDefault(request.getPhone(), 0);
-        String phone = request.getPhone();
 
-        User user = repository.findByPhone(phone)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
-        if(!user.getStatus()){
-            throw new AppException(ErrorCode.STATUS_LOCK);
-        }
+    public ResultLogin login(AuthenRequest request) throws Exception {
+        String key="login_fail:"+request.getPhone();
+        String failStr=redisTemplate.opsForValue().get(key);
+        int failed = failStr==null?0:Integer.parseInt(failStr) ;
         if (failed >= 3) {
             if (request.getCaptchaToken() == null ||
                     !captchaService.verify(request.getCaptchaToken())) {
@@ -127,15 +129,24 @@ public class AuthenticationService {
                 throw new AppException(ErrorCode.CAPTCHA_INVALID);
             }
         }
+        User user = repository.findByPhone(request.getPhone())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+
+        if (!user.getStatus()) {
+            throw new AppException(ErrorCode.STATUS_LOCK);
+        }
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            failCount.put(request.getPhone(), failed+1);
+           Long count= redisTemplate.opsForValue().increment(key);
+           if(count==1) {
+               redisTemplate.expire(key, 5, TimeUnit.MINUTES);
+           }
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
-        failCount.remove(request.getPhone());
+        redisTemplate.delete(key);
         user.setOnline(true);
         user.setLastOnline(null);
-        User saved=repository.save(user);
-        UserResponse userResponse = userMapper.toDto(saved);
+        User saved = repository.save(user);
 
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(saved)
@@ -149,47 +160,48 @@ public class AuthenticationService {
         String accessToken = generateAccessToken(saved);
         String refreshTokenJwt = generateRefreshToken(saved);
         refreshToken.setToken(refreshTokenJwt);
-        RefreshToken savedToken = refreshTokenRepository.save(refreshToken);
+        refreshTokenRepository.save(refreshToken);
 
         return ResultLogin.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshTokenJwt)
                 .build();
     }
-    @Transactional
-    public ResultLogin refresh(String refreshToken) throws Exception{
-        SignedJWT jwt=SignedJWT.parse(refreshToken);
 
-        if(!jwt.verify(new MACVerifier(jwtProperties.getSecret()))){
+    @Transactional
+    public ResultLogin refresh(String refreshToken) throws Exception {
+        SignedJWT jwt = SignedJWT.parse(refreshToken);
+
+        if (!jwt.verify(new MACVerifier(jwtProperties.getSecret()))) {
             throw new AppException(ErrorCode.TOKEN_INVALID);
         }
 
-        Date expiry=jwt.getJWTClaimsSet().getExpirationTime();
+        Date expiry = jwt.getJWTClaimsSet().getExpirationTime();
 
-        if(expiry.before(new Date())){
+        if (expiry.before(new Date())) {
             throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
 
-        RefreshToken refreshTokenEntity=refreshTokenRepository.findByToken(refreshToken)
-                        .orElseThrow(()->new AppException(ErrorCode.TOKEN_NOTFOUND));
+        RefreshToken refreshTokenEntity = refreshTokenRepository.findByToken(refreshToken)
+                .orElseThrow(() -> new AppException(ErrorCode.TOKEN_NOTFOUND));
 
-        if(refreshTokenEntity.getRevoked()){
+        if (refreshTokenEntity.getRevoked()) {
             throw new AppException(ErrorCode.TOKEN_REVOKED);
         }
-        User user=refreshTokenEntity.getUser();
+        User user = refreshTokenEntity.getUser();
 
         refreshTokenEntity.setRevoked(true);
         refreshTokenRepository.save(refreshTokenEntity);
 
-        String newAccess=generateAccessToken(user);
+        String newAccess = generateAccessToken(user);
 
-        String newRefresh=generateRefreshToken(user);
+        String newRefresh = generateRefreshToken(user);
 
-        RefreshToken refreshToken1=RefreshToken.builder()
+        RefreshToken refreshToken1 = RefreshToken.builder()
                 .token(newRefresh)
                 .user(user)
                 .expiresAt(
-                        new Date(System.currentTimeMillis()+jwtProperties.getRefreshExpire())
+                        new Date(System.currentTimeMillis() + jwtProperties.getRefreshExpire())
                 )
                 .revoked(false)
                 .build();
@@ -200,6 +212,27 @@ public class AuthenticationService {
                 .build();
     }
 
+    public boolean hasSpecialCharacter(String password) {
+        if (password == null) return false;
+        return password.matches(".*[^a-zA-Z0-9].*");
+    }
+
+    public UserResponse createUser(UserRequest request) {
+        if (repository.existsByPhone(request.getPhone())) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+        if (hasSpecialCharacter(request.getPassword()) || request.getPassword().length() < 6) {
+            throw new AppException(ErrorCode.PASS_VALID);
+        }
+        User user = mapper.toEntity(request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setCreatedAt(new Date());
+        user.setRole("Customer");
+        user.setStatus(true);
+        user.setLastOnline(null);
+        User saved = repository.save(user);
+        return mapper.toDto(saved);
+    }
 
 
 }

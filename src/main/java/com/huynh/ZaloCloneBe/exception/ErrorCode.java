@@ -39,5 +39,5 @@ public enum ErrorCode {
     ;
 
     private int code;
-    private String messenger;
+    private String message;
 }

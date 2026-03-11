@@ -24,7 +24,7 @@ public class FriendRequestController {
     public ApiResponse<SendFriendResponse> sendRequest(@RequestBody  SendFriendRequest request) {
         return ApiResponse.<SendFriendResponse>builder()
                 .code(1001)
-                .messenge("gui loi moi thanh cong")
+                .message("gui loi moi thanh cong")
                 .result(service.sendRequest(request))
                 .build();
     }
@@ -35,7 +35,7 @@ public class FriendRequestController {
     ) {
         return ApiResponse.<AcceptedFriendResponse>builder()
                 .code(1000)
-                .messenge("Chấp nhận lời mời kết bạn")
+                .message("Chấp nhận lời mời kết bạn")
                 .result(service.acceptFriend(meId, otherId))
                 .build();
     }
@@ -44,7 +44,7 @@ public class FriendRequestController {
     public ApiResponse<List<ListSendFriendResponse>>getAllFriendRequest(@RequestParam("id") Long id){
         return ApiResponse.<List<ListSendFriendResponse>>builder()
                 .code(1001)
-                .messenge("Lay danh sach gui loi moi thanh cong")
+                .message("Lay danh sach gui loi moi thanh cong")
                 .result(service.getAllSendFriend(id))
                 .build();
     }
@@ -53,7 +53,7 @@ public class FriendRequestController {
         service.rejectRequest(meId,userId);
         return ApiResponse.<Void>builder()
                 .code(1001)
-                .messenge("reject thanh cong")
+                .message("reject thanh cong")
                 .build();
     }
 
@@ -63,7 +63,7 @@ public class FriendRequestController {
         service.cancelRequest(meId,userId);
         return ApiResponse.<Void>builder()
                 .code(1001)
-                .messenge("reject thanh cong")
+                .message("reject thanh cong")
                 .build();
 
     }

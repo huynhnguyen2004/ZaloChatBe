@@ -18,7 +18,7 @@ public class MessageController {
     public ApiResponse<MessageResponse>sendMessage(@RequestBody MessageRequest request){
         return ApiResponse.<MessageResponse>builder()
                 .code(1001)
-                .messenge("gui tin nhan thanh cong")
+                .message("gui tin nhan thanh cong")
                 .result(service.sendMessage(request))
                 .build();
     }

@@ -40,7 +40,7 @@ public class RefreshTokenController {
         ApiResponse<AuthenResponse> apiResponse =
                 ApiResponse.<AuthenResponse>builder()
                         .code(1001)
-                        .messenge("refresh thanh cong")
+                        .message("refresh thanh cong")
                         .result(authenResponse)
                         .build();
         return ResponseEntity.ok(apiResponse);
