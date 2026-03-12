@@ -68,12 +68,14 @@ public class  UserService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
 
         UserResponse userResponse=mapper.toDto(user);
-        redisTemplate.opsForValue().set(
-                key,
-                objectMapper.writeValueAsString(userResponse),
-                java.time.Duration.ofMinutes(30)
-
-        );
+        try {
+            redisTemplate.opsForValue().set(
+                    key,
+                    objectMapper.writeValueAsString(userResponse),
+                    java.time.Duration.ofMinutes(30));
+        } catch (Exception e) {
+            redisTemplate.delete(key);
+        }
         return userResponse;
     }
     public PageResponse<UserResponse>getCustomer(int page,int size){
@@ -198,23 +200,44 @@ public class  UserService {
 
         return RelationshipStatus.NONE;
     }
-    public UserProfileResponse getUserProfile(Long meId, Long otherId) {
+    public UserProfileResponse getUserProfile(Long meId, Long otherId) throws Exception {
 
-        User user = repository.findById(otherId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+        String key = "user:profile:" + otherId;
+
+        String cacheUser = redisTemplate.opsForValue().get(key);
+
+        UserProfileResponse profile;
+
+        if (cacheUser != null) {
+            profile = objectMapper.readValue(cacheUser, UserProfileResponse.class);
+
+        } else {
+
+            User user = repository.findById(otherId)
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+
+            profile = UserProfileResponse.builder()
+                    .id(user.getId())
+                    .firstname(user.getFirstname())
+                    .lastname(user.getLastname())
+                    .avatarUrl(user.getAvatarUrl())
+                    .coverUrl(user.getCoverUrl())
+                    .gender(user.getGender())
+                    .online(user.isOnline())
+                    .build();
+
+            redisTemplate.opsForValue().set(
+                    key,
+                    objectMapper.writeValueAsString(profile),
+                    java.time.Duration.ofMinutes(30)
+            );
+        }
 
         RelationshipStatus status = getRelationshipStatus(meId, otherId);
 
-        return UserProfileResponse.builder()
-                .id(user.getId())
-                .firstname(user.getFirstname())
-                .lastname(user.getLastname())
-                .avatarUrl(user.getAvatarUrl())
-                .coverUrl(user.getCoverUrl())
-                .gender(user.getGender())
-                .online(user.isOnline())
-                .relationshipStatus(status)
-                .build();
+        profile.setRelationshipStatus(status);
+
+        return profile;
     }
     @Transactional
     public void lockUser(Long userId) {

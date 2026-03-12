@@ -102,10 +102,10 @@ public class UserController {
     }
 
     @GetMapping("/seen")
-    public ApiResponse<UserProfileResponse> viewUserProfile(
+    public ApiResponse<UserProfileResponse> viewUserProfile (
             @RequestParam Long meId,
             @RequestParam Long otherId
-    ) {
+    )throws Exception {
         return ApiResponse.<UserProfileResponse>builder()
                 .code(1001)
                 .message("Xem trang cá nhân")
