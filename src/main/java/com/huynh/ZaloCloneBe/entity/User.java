@@ -13,13 +13,20 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Table(name = "users")
+@Table(
+        name = "users",
+        indexes = {
+                @Index(name="idx_user_phone",columnList = "phone")
+        }
+
+)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String firstname;
     private String password;
+    @Column(nullable = false,unique = true)
     private String phone;
     private Integer gender;
     private Date birthday;

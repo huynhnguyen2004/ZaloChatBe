@@ -6,7 +6,10 @@ import lombok.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "friends")
+@Table(name = "friends",
+        indexes = {
+                @Index(name = "idx_fr", columnList = "user1_id,user2_id")
+        })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -8,7 +8,12 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 
 @Entity
-@Table(name = "friend_requests")
+@Table(name = "friend_requests",
+        indexes = {
+                @Index(name = "idx_friendrq_sd_re_stt", columnList = "sender_id,receiver_id,status"),
+                @Index(name = "idx_friendrq_sd_stt", columnList = "sender_id,status"),
+                @Index(name = "idx_friendrq_rc_stt", columnList = "receiver_id,status")
+        })
 @AllArgsConstructor
 @NoArgsConstructor
 @Data

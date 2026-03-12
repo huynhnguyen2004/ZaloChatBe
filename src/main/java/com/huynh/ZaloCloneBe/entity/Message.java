@@ -6,7 +6,12 @@ import lombok.Data;
 import java.util.Date;
 
 @Entity
-@Table(name = "messages")
+@Table(name = "messages",
+        indexes = {
+        @Index(name = "idx_message_senderId",columnList = "sender_id"),
+                @Index(name = "idx_message_conversation_TIME",columnList = "conversation_id,createdAt")
+        }
+)
 @Data
 public class Message {
     @Id

@@ -8,7 +8,12 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-@Table(name="refresh_token")
+@Table(name="refresh_token",
+        indexes = {
+        @Index(name = "idx_token",columnList = "token"),
+                @Index(name="idx_user",columnList = "user_id")
+        }
+)
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
