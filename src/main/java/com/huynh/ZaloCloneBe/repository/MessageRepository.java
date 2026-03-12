@@ -12,7 +12,14 @@ import java.util.Optional;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
-    List<Message> findByConversationIdOrderByCreatedAtAsc(Long conversationId);
+    @Query("""
+            SELECT m
+            FROM Message m
+            JOIN FETCH m.sender
+            WHERE m.conversation.id = :conversationId
+            ORDER BY m.createdAt ASC
+            """)
+    List<Message> findMessages(Long conversationId);
     @Query("""
     SELECT MAX(m.id)
     FROM Message m

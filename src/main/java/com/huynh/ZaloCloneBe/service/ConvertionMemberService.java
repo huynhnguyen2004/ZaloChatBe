@@ -20,60 +20,9 @@ import java.util.Optional;
 public class ConvertionMemberService {
     @Autowired
     private ConversationMemberRepository repository;
-    @Autowired
-    private MessageRepository messageRepository;
     public List<ConversationItemResponse> getUserConversations(Long userId) {
 
-        List<ConversationMember> myMembers =
-                repository.findByUser_Id(userId);
-
-        return myMembers.stream()
-                .map(m -> {
-
-                    Conversation c = m.getConversation();
-                    if (!"PRIVATE".equals(c.getType())) return null;
-
-                    ConversationMember other =
-                            repository.findOtherMember(c.getId(), userId);
-                    if (other == null) return null;
-
-                    User friend = other.getUser();
-
-
-                    Optional<Message> lastMsgOpt =
-                            messageRepository.findTopByConversation_IdOrderByCreatedAtDesc(c.getId());
-
-                    Message lastMsg = lastMsgOpt.orElse(null);
-                    Boolean isRead = lastMsg != null ? lastMsg.isRead() : true;
-                    return ConversationItemResponse.builder()
-                            .conversationId(c.getId())
-                            .type(c.getType())
-                            .friendId(friend.getId())
-                            .friendName(friend.getFirstname())
-                            .friendlastName(friend.getLastname())
-                            .friendAvatar(friend.getAvatarUrl())
-                            .online(friend.isOnline())
-                            .lastReadMessageContent(
-                                    lastMsg != null ? lastMsg.getContent() : null
-                            )
-                            .isReadLastContent(isRead)
-                            .userIdLastMessage(
-                                    lastMsg != null ? lastMsg.getSender().getId() : null
-                            )
-                            .createdAt(
-                                    lastMsg != null ? lastMsg.getCreatedAt() : null
-                            )
-                            .lastOnline(friend.getLastOnline())
-                            .build();
-
-                })
-                .filter(Objects::nonNull)
-                .sorted((a, b) -> {
-                    if (a.getCreatedAt() == null) return 1;
-                    if (b.getCreatedAt() == null) return -1;
-                    return b.getCreatedAt().compareTo(a.getCreatedAt());
-                })
-                .toList();
+        return repository.getConversationList(userId);
     }
 
 

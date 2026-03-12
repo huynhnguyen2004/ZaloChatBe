@@ -39,8 +39,8 @@ public class ConversationService {
         conversationRepository.save(c);
         Long lastId = messageRepository.getLastIdMessage(c.getId()).orElse(null);
 
-        User u1 = userRepository.findById(userA).orElseThrow(()->new AppException(ErrorCode.USER_NOTFOUND));
-        User u2 = userRepository.findById(userB).orElseThrow(()->new AppException(ErrorCode.USER_NOTFOUND));
+        User u1 = userRepository.getReferenceById(userA);
+        User u2 = userRepository.getReferenceById(userB);
 
         ConversationMember m1 = new ConversationMember();
         m1.setConversation(c);

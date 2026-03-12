@@ -37,8 +37,7 @@ public class MessageService {
             throw new AppException(ErrorCode.CONTENT_NULL);
         }
 
-        User sender = userRepository.findById(request.getSenderId())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+        User sender = userRepository.getReferenceById(request.getSenderId());
 
 
         Conversation conversation =
@@ -63,7 +62,7 @@ public class MessageService {
 
     public List<MessageResponse> getMessages(Long conversationId) {
         return repository
-                .findByConversationIdOrderByCreatedAtAsc(conversationId)
+                .findMessages(conversationId)
                 .stream()
                 .map(messageMapper::toDto)
                 .toList();

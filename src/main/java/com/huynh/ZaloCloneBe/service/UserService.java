@@ -1,10 +1,11 @@
 package com.huynh.ZaloCloneBe.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huynh.ZaloCloneBe.dto.request.UpdatePassword;
 import com.huynh.ZaloCloneBe.dto.request.UpdateRequest;
-import com.huynh.ZaloCloneBe.dto.request.UserRequest;
+
 import com.huynh.ZaloCloneBe.dto.response.*;
-import com.huynh.ZaloCloneBe.entity.FriendRequest;
+
 import com.huynh.ZaloCloneBe.entity.RelationshipStatus;
 import com.huynh.ZaloCloneBe.entity.StatusRequest;
 import com.huynh.ZaloCloneBe.entity.User;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +42,9 @@ public class  UserService {
     private FileService fileService;
     @Autowired
     private FriendRequestRepository friendRequestRepository;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+    private ObjectMapper objectMapper=new ObjectMapper();
 
     public  boolean hasSpecialCharacter(String password) {
         if (password == null) return false;
@@ -54,12 +59,22 @@ public class  UserService {
 
         Long userId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
 
-
+        String key="user:"+userId;
+        String cachUser=redisTemplate.opsForValue().get(key);
+        if(cachUser!=null){
+            return objectMapper.readValue(cachUser,UserResponse.class);
+        }
         User user = repository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
 
+        UserResponse userResponse=mapper.toDto(user);
+        redisTemplate.opsForValue().set(
+                key,
+                objectMapper.writeValueAsString(userResponse),
+                java.time.Duration.ofMinutes(30)
 
-        return mapper.toDto(user);
+        );
+        return userResponse;
     }
     public PageResponse<UserResponse>getCustomer(int page,int size){
         Pageable pageable= PageRequest.of(page,size, Sort.by("lastname").ascending());

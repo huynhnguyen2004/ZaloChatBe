@@ -1,6 +1,7 @@
 package com.huynh.ZaloCloneBe.repository;
 
 
+import com.huynh.ZaloCloneBe.dto.response.ConversationItemResponse;
 import com.huynh.ZaloCloneBe.entity.ConversationMember;
 import com.huynh.ZaloCloneBe.entity.ConversationMemberId;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,20 +14,38 @@ import java.util.List;
 @Repository
 public interface ConversationMemberRepository
         extends JpaRepository<ConversationMember, ConversationMemberId> {
-    List<ConversationMember> findByUser_Id(Long userId);
-
-    boolean existsByConversation_IdAndUser_Id(
-            Long conversationId, Long userId);
-
     @Query("""
-            SELECT cm FROM ConversationMember cm
-            WHERE cm.conversation.id = :conversationId
-            AND cm.user.id <> :userId
+            SELECT new com.huynh.ZaloCloneBe.dto.response.ConversationItemResponse(
+                c.id,
+                c.type,
+                u.id,
+                u.firstname,
+                u.lastname,
+                u.avatarUrl,
+                u.online,
+                m.content,
+                m.isRead,
+                m.sender.id,
+                u.lastOnline,
+                m.createdAt
+            )
+            FROM ConversationMember cm
+            JOIN cm.conversation c
+            JOIN ConversationMember other ON other.conversation = c
+            JOIN other.user u
+            LEFT JOIN Message m ON m.id = (
+                SELECT m2.id
+                FROM Message m2
+                WHERE m2.conversation = c
+                ORDER BY m2.createdAt DESC
+                LIMIT 1
+            )
+            WHERE cm.user.id = :userId
+            AND u.id <> :userId
+            AND c.type = 'PRIVATE'
+            ORDER BY m.createdAt DESC
             """)
-    ConversationMember findOtherMember(
-                                       @Param("conversationId") Long conversationId,
-                                       @Param("userId") Long userId
-    );
+    List<ConversationItemResponse> getConversationList(Long userId);
 
 }
 

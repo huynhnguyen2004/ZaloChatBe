@@ -115,6 +115,7 @@ public class AuthenticationService {
         user.setLastOnline(new Date());
         refreshTokenRepository.revokeByToken(refreshToken);
         repository.save(user);
+        redisTemplate.delete("user:"+userId);
 
     }
 
