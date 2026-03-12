@@ -22,6 +22,7 @@ public enum ErrorCode {
     FRIEND_notfound(1012,"FRIEND_not found"),
     MESS_NOTFOUND(1013,"MESS NOT FOUND"),
     CAPTCHA_INVALID(1014,"Capcha không hợp lệ"),
+    CAPTCHA_REQUIRED(1028,"CAPTCHA_REQUIRED"),
     FILE_EMPTY(1015,"FILE RONG"),
     JUST_IMAGE(1016,"CHI ANH jpg,png"),
     OLDPASS_NULL(1017,"Vui lòng nhập mật khẩu hiện tại"),
@@ -34,7 +35,8 @@ public enum ErrorCode {
     TOKEN_INVALID(1024,"token khong hop le"),
     TOKEN_EXPIRED(1025,"token het han"),
     TOKEN_NOTFOUND(1026,"TOKEN NOT FOUND"),
-    TOKEN_REVOKED(1027,"TOKEN REVOKED")
+    TOKEN_REVOKED(1027,"TOKEN REVOKED"),
+
 
     ;
 

@@ -119,15 +119,18 @@ public class AuthenticationService {
     }
 
     public ResultLogin login(AuthenRequest request) throws Exception {
-        String key="login_fail:"+request.getPhone();
-        String failStr=redisTemplate.opsForValue().get(key);
-        int failed = failStr==null?0:Integer.parseInt(failStr) ;
+        String key = "login_fail:" + request.getPhone();
+        String failStr = redisTemplate.opsForValue().get(key);
+        int failed = failStr == null ? 0 : Integer.parseInt(failStr);
         if (failed >= 3) {
-            if (request.getCaptchaToken() == null ||
-                    !captchaService.verify(request.getCaptchaToken())) {
+            if (request.getCaptchaToken() == null) {
+                throw new AppException(ErrorCode.CAPTCHA_REQUIRED);
+            }
+            if (!captchaService.verify(request.getCaptchaToken())) {
 
                 throw new AppException(ErrorCode.CAPTCHA_INVALID);
             }
+
         }
         User user = repository.findByPhone(request.getPhone())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
@@ -137,10 +140,10 @@ public class AuthenticationService {
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-           Long count= redisTemplate.opsForValue().increment(key);
-           if(count==1) {
-               redisTemplate.expire(key, 5, TimeUnit.MINUTES);
-           }
+            Long count = redisTemplate.opsForValue().increment(key);
+            if (count == 1) {
+                redisTemplate.expire(key, 5, TimeUnit.MINUTES);
+            }
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         redisTemplate.delete(key);
