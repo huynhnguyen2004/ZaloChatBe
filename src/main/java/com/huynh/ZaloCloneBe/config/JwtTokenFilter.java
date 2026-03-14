@@ -13,6 +13,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,12 +31,17 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private UserRepository userRepository;
     @Autowired
     private JwtProperties jwtProperties;
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
+        String path = request.getRequestURI();
+
+        if (path.startsWith("/api/auth")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         String authHeader = request.getHeader("Authorization");
 
@@ -87,6 +93,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                         """);
                 return;
             }
+            System.out.println("PATH: " + request.getRequestURI());
+            System.out.println("AUTH HEADER: " + request.getHeader("Authorization"));
+            System.out.println("METHOD: " + request.getMethod());
             UserPrincipal userPrincipal = UserPrincipal.builder()
                     .id(user.getId())
                     .firstname(user.getFirstname())

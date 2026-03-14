@@ -36,6 +36,7 @@ public enum ErrorCode {
     TOKEN_EXPIRED(1025,"token het han"),
     TOKEN_NOTFOUND(1026,"TOKEN NOT FOUND"),
     TOKEN_REVOKED(1027,"TOKEN REVOKED"),
+   IVALID_PHONE(1028,"Invalid phone number")
 
 
     ;
