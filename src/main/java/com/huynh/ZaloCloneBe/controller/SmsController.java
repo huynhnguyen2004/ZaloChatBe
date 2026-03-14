@@ -1,7 +1,9 @@
 package com.huynh.ZaloCloneBe.controller;
 
 import com.huynh.ZaloCloneBe.dto.request.SendOtpRequest;
+import com.huynh.ZaloCloneBe.dto.request.VerifyOtpRequest;
 import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
+import com.huynh.ZaloCloneBe.dto.response.VerifyTokenResponse;
 import com.huynh.ZaloCloneBe.service.SmsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +22,15 @@ public class SmsController {
         return ApiResponse.<Void>builder()
                 .code(200)
                 .message("Gui otp thanh cong")
+                .build();
+    }
+    @PostMapping("/verify-otp")
+    public ApiResponse<VerifyTokenResponse>verifyOtp(@RequestBody VerifyOtpRequest request) throws Exception{
+
+        return ApiResponse.<VerifyTokenResponse>builder()
+                .code(200)
+                .message("Verify thanh cong")
+                .result( smsService.verifyOtp(request.getPhone(), request.getOtp()))
                 .build();
     }
 }

@@ -36,7 +36,11 @@ public enum ErrorCode {
     TOKEN_EXPIRED(1025,"token het han"),
     TOKEN_NOTFOUND(1026,"TOKEN NOT FOUND"),
     TOKEN_REVOKED(1027,"TOKEN REVOKED"),
-   IVALID_PHONE(1028,"Invalid phone number")
+   IVALID_PHONE(1028,"Invalid phone number"),
+    OTP_COOLDOWN(1029,"Vui lòng gửi lại OTP sau "),
+    otp_exprired(1030,"OTP đã hết hạn,vui lòng thử lại"),
+    OTP_BLOCKED(1031,"OTP đã bị khóa"),
+    OTP_WRONG(1032,"OTP bị sai")
 
 
     ;

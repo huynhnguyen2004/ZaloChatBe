@@ -1,8 +1,10 @@
 package com.huynh.ZaloCloneBe.service;
 
+import com.huynh.ZaloCloneBe.dto.response.VerifyTokenResponse;
+import com.huynh.ZaloCloneBe.until.OtpUntil;
+import com.huynh.ZaloCloneBe.until.PhoneUntil;
 import com.vonage.client.VonageClient;
 import com.vonage.client.sms.messages.TextMessage;
-import com.vonage.client.sms.SmsSubmissionResponse;
 import com.huynh.ZaloCloneBe.exception.AppException;
 import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.UUID;
 
 @Service
 public class SmsService {
@@ -23,6 +26,8 @@ public class SmsService {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+
 
     public void sendSms(String phone, String message) throws Exception {
 
@@ -41,35 +46,72 @@ public class SmsService {
 
     }
 
-    public String formatPhone(String phone){
-
-        phone = phone.trim();
-
-        if(phone.startsWith("0")){
-            phone = "84" + phone.substring(1);
-        }
-
-        if(!phone.startsWith("84")){
-            throw new AppException(ErrorCode.IVALID_PHONE);
-        }
-
-        return phone;
-    }
 
     public void sendOtp(String phone) throws Exception {
 
-        String otp = String.valueOf((int)(Math.random() * 900000) + 100000);
+        String formatPhone = PhoneUntil.formatPhone(phone);
 
-        String formatPhone = formatPhone(phone);
+        String cooldownKey="cooldown:"+formatPhone;
+
+        Boolean exist=redisTemplate.hasKey(cooldownKey);
+
+        if(Boolean.TRUE.equals(exist)){
+            throw new AppException(ErrorCode.OTP_COOLDOWN);
+        }
+
+        String otp = OtpUntil.generateOtp();
 
         String key = "otp:" + formatPhone;
 
         redisTemplate.opsForValue().set(
                 key,
                 otp,
-                Duration.ofMinutes(3)
+                Duration.ofMinutes(2)
+        );
+        redisTemplate.opsForValue().set(
+                cooldownKey,
+                "1",
+                Duration.ofSeconds(30)
         );
 
-        sendSms(formatPhone, "Your OTP: " + otp);
+//        sendSms(formatPhone, "Your OTP: " + otp);
+        System.out.print("Your OTP: " + otp);
+    }
+    public VerifyTokenResponse verifyOtp(String phone, String inputOtp) {
+
+        String formatPhone = PhoneUntil.formatPhone(phone);
+
+        String key = "otp:" + formatPhone;
+
+        String attemptKey = "attempt:" + formatPhone;
+
+        String otp = redisTemplate.opsForValue().get(key);
+
+        if (otp == null) {
+            throw new AppException(ErrorCode.otp_exprired);
+        }
+
+        if (!inputOtp.equals(otp)) {
+
+            Long attempt = redisTemplate.opsForValue().increment(attemptKey);
+            redisTemplate.expire(attemptKey, Duration.ofMinutes(5));
+
+            if (attempt >= 5) {
+                throw new AppException(ErrorCode.OTP_BLOCKED);
+            }
+            throw new AppException(ErrorCode.OTP_WRONG);
+
+        }
+        String verifyToken= UUID.randomUUID().toString();
+        redisTemplate.delete(key);
+        redisTemplate.delete(attemptKey);
+
+
+        redisTemplate.opsForValue().set(
+                "verify:"+verifyToken,
+                formatPhone,
+                Duration.ofMinutes(5)
+        );
+        return new VerifyTokenResponse(verifyToken);
     }
 }
