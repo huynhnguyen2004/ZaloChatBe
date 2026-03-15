@@ -1,6 +1,7 @@
 package com.huynh.ZaloCloneBe.service;
 
 import com.huynh.ZaloCloneBe.dto.response.VerifyTokenResponse;
+import com.huynh.ZaloCloneBe.repository.UserRepository;
 import com.huynh.ZaloCloneBe.until.OtpUntil;
 import com.huynh.ZaloCloneBe.until.PhoneUntil;
 import com.vonage.client.VonageClient;
@@ -27,8 +28,8 @@ public class SmsService {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-
-
+    @Autowired
+    private UserRepository userRepository;
     public void sendSms(String phone, String message) throws Exception {
 
         VonageClient client = VonageClient.builder()
@@ -51,6 +52,10 @@ public class SmsService {
 
         String formatPhone = PhoneUntil.formatPhone(phone);
 
+        if(userRepository.existsByPhone(formatPhone)){
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+
         String cooldownKey="cooldown:"+formatPhone;
 
         Boolean exist=redisTemplate.hasKey(cooldownKey);
@@ -71,7 +76,7 @@ public class SmsService {
         redisTemplate.opsForValue().set(
                 cooldownKey,
                 "1",
-                Duration.ofSeconds(30)
+                Duration.ofSeconds(50)
         );
 
 //        sendSms(formatPhone, "Your OTP: " + otp);

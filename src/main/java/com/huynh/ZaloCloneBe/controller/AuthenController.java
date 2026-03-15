@@ -2,6 +2,7 @@ package com.huynh.ZaloCloneBe.controller;
 
 import com.huynh.ZaloCloneBe.config.JwtProperties;
 import com.huynh.ZaloCloneBe.dto.request.AuthenRequest;
+import com.huynh.ZaloCloneBe.dto.request.RegisterRequest;
 import com.huynh.ZaloCloneBe.dto.request.UserRequest;
 import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
 import com.huynh.ZaloCloneBe.dto.response.AuthenResponse;
@@ -72,11 +73,11 @@ public class AuthenController {
                 .build();
     }
     @PostMapping("/register")
-    public ApiResponse<UserResponse>createUser(@RequestBody UserRequest request){
+    public ApiResponse<UserResponse>createUser(@RequestBody RegisterRequest request){
         return ApiResponse.<UserResponse>builder()
                 .code(1001)
                 .message("Tạo user thành công")
-                .result(authenticationService.createUser(request))
+                .result(authenticationService.register(request))
                 .build();
     }
 

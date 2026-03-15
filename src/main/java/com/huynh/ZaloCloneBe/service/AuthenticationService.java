@@ -2,6 +2,7 @@ package com.huynh.ZaloCloneBe.service;
 
 import com.huynh.ZaloCloneBe.config.JwtProperties;
 import com.huynh.ZaloCloneBe.dto.request.AuthenRequest;
+import com.huynh.ZaloCloneBe.dto.request.RegisterRequest;
 import com.huynh.ZaloCloneBe.dto.request.UserRequest;
 import com.huynh.ZaloCloneBe.dto.response.AuthenResponse;
 import com.huynh.ZaloCloneBe.dto.response.ResultLogin;
@@ -13,6 +14,8 @@ import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import com.huynh.ZaloCloneBe.mapper.UserMapper;
 import com.huynh.ZaloCloneBe.repository.RefreshTokenRepository;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
+import com.huynh.ZaloCloneBe.until.PasswordUntil;
+import com.huynh.ZaloCloneBe.until.PhoneUntil;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
@@ -133,7 +136,7 @@ public class AuthenticationService {
             }
 
         }
-        User user = repository.findByPhone(request.getPhone())
+        User user = repository.findByPhone(PhoneUntil.formatPhone(request.getPhone()))
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
 
         if (!user.getStatus()) {
@@ -216,25 +219,40 @@ public class AuthenticationService {
                 .build();
     }
 
-    public boolean hasSpecialCharacter(String password) {
-        if (password == null) return false;
-        return password.matches(".*[^a-zA-Z0-9].*");
-    }
 
-    public UserResponse createUser(UserRequest request) {
-        if (repository.existsByPhone(request.getPhone())) {
+
+    public UserResponse register(RegisterRequest request) {
+
+        String key="verify:"+request.getVerifyTokenOtp();
+
+        String phone=redisTemplate.opsForValue().get(key);
+
+        if(phone==null){
+            throw new AppException(ErrorCode.OTP_NOTFOUND);
+        }
+        if(repository.existsByPhone(phone)){
             throw new AppException(ErrorCode.USER_EXISTED);
         }
-        if (hasSpecialCharacter(request.getPassword()) || request.getPassword().length() < 6) {
+
+        if (!PasswordUntil.validatePassword(request.getPassword())) {
             throw new AppException(ErrorCode.PASS_VALID);
         }
-        User user = mapper.toEntity(request);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setCreatedAt(new Date());
-        user.setRole("Customer");
-        user.setStatus(true);
-        user.setLastOnline(null);
+
+        User user = User.builder()
+                .phone(phone)
+                .firstname(request.getFirstname())
+                .lastname(request.getLastname())
+                .birthday(request.getBirthday())
+                .gender(request.getGender())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .createdAt(new Date())
+                .role("Customer")
+                .status(true)
+                .build();
+
         User saved = repository.save(user);
+
+        redisTemplate.delete(key);
         return mapper.toDto(saved);
     }
 

@@ -2,6 +2,7 @@ package com.huynh.ZaloCloneBe.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,10 +14,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Builder
 @Table(
         name = "users",
         indexes = {
-                @Index(name="idx_user_phone",columnList = "phone")
+                @Index(name="idx_users_phone",columnList = "phone",unique = true)
         }
 
 )

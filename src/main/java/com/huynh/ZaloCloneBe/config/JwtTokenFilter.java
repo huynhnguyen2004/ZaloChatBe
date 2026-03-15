@@ -93,9 +93,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                         """);
                 return;
             }
-            System.out.println("PATH: " + request.getRequestURI());
-            System.out.println("AUTH HEADER: " + request.getHeader("Authorization"));
-            System.out.println("METHOD: " + request.getMethod());
             UserPrincipal userPrincipal = UserPrincipal.builder()
                     .id(user.getId())
                     .firstname(user.getFirstname())
