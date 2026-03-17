@@ -35,7 +35,7 @@ public class AuthenController {
                 .secure(false)
                 .sameSite("Lax")
                 .path("/")
-                .maxAge(jwtProperties.getRefreshExpire() / 1000)
+                .maxAge(result.getRefreshExpire() / 1000)
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

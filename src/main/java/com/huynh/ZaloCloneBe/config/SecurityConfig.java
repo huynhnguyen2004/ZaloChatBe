@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/ws/**").permitAll()    // 🔥 Cho phép WebSocket endpoint
+                        .requestMatchers("/ws/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

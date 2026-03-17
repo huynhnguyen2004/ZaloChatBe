@@ -9,5 +9,6 @@ import lombok.Data;
 public class ResultLogin {
     private String accessToken;
     private String refreshToken;
+    private long refreshExpire;
 
 }

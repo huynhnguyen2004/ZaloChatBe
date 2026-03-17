@@ -52,13 +52,14 @@ public class AuthenticationService {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    public String generateAccessToken(User user) throws Exception {
+    public String generateAccessToken(User user,Boolean isRememberMe) throws Exception {
 
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getId().toString())
                 .claim("role", user.getRole())
+                .claim("rememberMe",isRememberMe)
                 .issueTime(new Date())
                 .expirationTime(
                         new Date(System.currentTimeMillis() + jwtProperties.getAccessExpire())
@@ -77,15 +78,16 @@ public class AuthenticationService {
         return signedJWT.serialize();
     }
 
-    public String generateRefreshToken(User user) throws Exception {
+    public String generateRefreshToken(User user,long refreshExpire,Boolean isRememberMe) throws Exception {
 
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getId().toString())
+                .claim("rememberMe",isRememberMe)
                 .issueTime(new Date())
                 .expirationTime(
-                        new Date(System.currentTimeMillis() + jwtProperties.getRefreshExpire())
+                        new Date(System.currentTimeMillis() + refreshExpire)
                 )
                 .build();
 
@@ -151,29 +153,35 @@ public class AuthenticationService {
         user.setOnline(true);
         user.setLastOnline(null);
         User saved = repository.save(user);
-
+        long refreshExpire = request.getIsRememberMe()
+                ? 30L * 24 * 60 * 60 * 1000
+                : jwtProperties.getRefreshExpire();
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(saved)
                 .expiresAt(
-                        new Date(System.currentTimeMillis() + jwtProperties.getRefreshExpire())
+                        new Date(System.currentTimeMillis() + refreshExpire)
                 )
                 .revoked(false)
                 .build();
 
 
-        String accessToken = generateAccessToken(saved);
-        String refreshTokenJwt = generateRefreshToken(saved);
+        String accessToken = generateAccessToken(saved,request.getIsRememberMe());
+        String refreshTokenJwt = generateRefreshToken(saved,refreshExpire,request.getIsRememberMe());
         refreshToken.setToken(refreshTokenJwt);
         refreshTokenRepository.save(refreshToken);
 
         return ResultLogin.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshTokenJwt)
+                .refreshExpire(refreshExpire)
                 .build();
     }
 
     @Transactional
     public ResultLogin refresh(String refreshToken) throws Exception {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new AppException(ErrorCode.TOKEN_NOTFOUND);
+        }
         SignedJWT jwt = SignedJWT.parse(refreshToken);
 
         if (!jwt.verify(new MACVerifier(jwtProperties.getSecret()))) {
@@ -197,22 +205,29 @@ public class AuthenticationService {
         refreshTokenEntity.setRevoked(true);
         refreshTokenRepository.save(refreshTokenEntity);
 
-        String newAccess = generateAccessToken(user);
+        Boolean rememberMe = (Boolean) jwt.getJWTClaimsSet().getClaim("rememberMe");
+        if(rememberMe==null){
+            rememberMe=false;
+        }
+        long refreshExpire = rememberMe
+                ? 30L * 24 * 60 * 60 * 1000
+                : jwtProperties.getRefreshExpire();
+        String newAccess = generateAccessToken(user,rememberMe);
 
-        String newRefresh = generateRefreshToken(user);
+        String newRefresh = generateRefreshToken(user,refreshExpire,rememberMe);
 
-        RefreshToken refreshToken1 = RefreshToken.builder()
-                .token(newRefresh)
-                .user(user)
-                .expiresAt(
-                        new Date(System.currentTimeMillis() + jwtProperties.getRefreshExpire())
-                )
-                .revoked(false)
-                .build();
-        refreshTokenRepository.save(refreshToken1);
+        refreshTokenEntity.setToken(newRefresh);
+        refreshTokenEntity.setExpiresAt(
+                new Date(System.currentTimeMillis() + refreshExpire)
+        );
+        refreshTokenEntity.setRevoked(false);
+
+        refreshTokenRepository.save(refreshTokenEntity);
+
         return ResultLogin.builder()
                 .accessToken(newAccess)
                 .refreshToken(newRefresh)
+                .refreshExpire(refreshExpire)
                 .build();
     }
 

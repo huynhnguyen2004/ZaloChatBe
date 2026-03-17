@@ -16,22 +16,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/token")
+@RequestMapping("/api/auth")
 public class RefreshTokenController {
     @Autowired
     private AuthenticationService authenticationService;
     @Autowired
     private JwtProperties jwtProperties;
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<AuthenResponse>> refresh(@CookieValue("refresh_token") String refreshToken, HttpServletResponse response)throws Exception {
-
+    public ResponseEntity<ApiResponse<AuthenResponse>> refresh(@CookieValue(value = "refresh_token",required = false) String refreshToken, HttpServletResponse response)throws Exception {
         ResultLogin resultLogin = authenticationService.refresh(refreshToken);
         ResponseCookie cookie = ResponseCookie.from("refresh_token", resultLogin.getRefreshToken())
                 .httpOnly(true)
                 .secure(false)
                 .sameSite("Lax")
                 .path("/")
-                .maxAge(jwtProperties.getRefreshExpire()/1000)
+                .maxAge(resultLogin.getRefreshExpire()/1000)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE,cookie.toString());
         AuthenResponse authenResponse= AuthenResponse.builder()
