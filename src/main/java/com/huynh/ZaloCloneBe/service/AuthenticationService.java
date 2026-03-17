@@ -2,11 +2,11 @@ package com.huynh.ZaloCloneBe.service;
 
 import com.huynh.ZaloCloneBe.config.JwtProperties;
 import com.huynh.ZaloCloneBe.dto.request.AuthenRequest;
+import com.huynh.ZaloCloneBe.dto.request.ResetPassWordRequest;
 import com.huynh.ZaloCloneBe.dto.request.RegisterRequest;
-import com.huynh.ZaloCloneBe.dto.request.UserRequest;
-import com.huynh.ZaloCloneBe.dto.response.AuthenResponse;
 import com.huynh.ZaloCloneBe.dto.response.ResultLogin;
 import com.huynh.ZaloCloneBe.dto.response.UserResponse;
+import com.huynh.ZaloCloneBe.entity.OtpPurpose;
 import com.huynh.ZaloCloneBe.entity.RefreshToken;
 import com.huynh.ZaloCloneBe.entity.User;
 import com.huynh.ZaloCloneBe.exception.AppException;
@@ -25,14 +25,11 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -223,7 +220,7 @@ public class AuthenticationService {
 
     public UserResponse register(RegisterRequest request) {
 
-        String key="verify:"+request.getVerifyTokenOtp();
+        String key="verify:"+ OtpPurpose.REGISTER.name()+":"+request.getVerifyTokenOtp();
 
         String phone=redisTemplate.opsForValue().get(key);
 
@@ -254,6 +251,29 @@ public class AuthenticationService {
 
         redisTemplate.delete(key);
         return mapper.toDto(saved);
+    }
+    public void resetPassword(ResetPassWordRequest request){
+        String key="verify:"+ OtpPurpose.RESET_PASSWORD.name()+":"+request.getVerifyTokenOtp();
+
+        String phone=redisTemplate.opsForValue().get(key);
+
+        if(phone==null){
+            throw new AppException(ErrorCode.OTP_NOTFOUND);
+        }
+
+        User user=repository.findByPhone(phone).orElseThrow(
+                ()-> new AppException(ErrorCode.USER_NOTFOUND)
+        );
+
+        if (!PasswordUntil.validatePassword(request.getPassword())) {
+            throw new AppException(ErrorCode.PASS_VALID);
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        repository.save(user);
+
+        redisTemplate.delete(key);
     }
 
 

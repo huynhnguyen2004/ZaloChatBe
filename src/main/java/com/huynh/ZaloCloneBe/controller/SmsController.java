@@ -18,7 +18,7 @@ public class SmsController {
     private SmsService smsService;
     @PostMapping("/send-otp")
     public ApiResponse<Void> sendOtp(@RequestBody SendOtpRequest request) throws Exception{
-        smsService.sendOtp(request.getPhone());
+        smsService.sendOtp(request);
         return ApiResponse.<Void>builder()
                 .code(200)
                 .message("Gui otp thanh cong")
@@ -30,7 +30,7 @@ public class SmsController {
         return ApiResponse.<VerifyTokenResponse>builder()
                 .code(200)
                 .message("Verify thanh cong")
-                .result( smsService.verifyOtp(request.getPhone(), request.getOtp()))
+                .result( smsService.verifyOtp(request))
                 .build();
     }
 }

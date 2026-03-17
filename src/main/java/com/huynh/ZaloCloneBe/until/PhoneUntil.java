@@ -1,8 +1,10 @@
 package com.huynh.ZaloCloneBe.until;
 
+import com.huynh.ZaloCloneBe.entity.OtpPurpose;
 import com.huynh.ZaloCloneBe.exception.AppException;
 import com.huynh.ZaloCloneBe.exception.ErrorCode;
-
+import com.huynh.ZaloCloneBe.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 public class PhoneUntil {
@@ -20,4 +22,5 @@ public class PhoneUntil {
 
         return phone;
     }
+
 }

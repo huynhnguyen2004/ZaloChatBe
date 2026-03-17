@@ -3,6 +3,7 @@ package com.huynh.ZaloCloneBe.controller;
 import com.huynh.ZaloCloneBe.config.JwtProperties;
 import com.huynh.ZaloCloneBe.dto.request.AuthenRequest;
 import com.huynh.ZaloCloneBe.dto.request.RegisterRequest;
+import com.huynh.ZaloCloneBe.dto.request.ResetPassWordRequest;
 import com.huynh.ZaloCloneBe.dto.request.UserRequest;
 import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
 import com.huynh.ZaloCloneBe.dto.response.AuthenResponse;
@@ -78,6 +79,14 @@ public class AuthenController {
                 .code(1001)
                 .message("Tạo user thành công")
                 .result(authenticationService.register(request))
+                .build();
+    }
+    @PostMapping("/reset-password")
+    public ApiResponse<Void>resetPassword(@RequestBody ResetPassWordRequest request){
+        authenticationService.resetPassword(request);
+        return ApiResponse.<Void>builder()
+                .code(1001)
+                .message("Reset pass thanh cong")
                 .build();
     }
 

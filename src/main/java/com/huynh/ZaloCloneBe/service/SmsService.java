@@ -1,6 +1,9 @@
 package com.huynh.ZaloCloneBe.service;
 
+import com.huynh.ZaloCloneBe.dto.request.SendOtpRequest;
+import com.huynh.ZaloCloneBe.dto.request.VerifyOtpRequest;
 import com.huynh.ZaloCloneBe.dto.response.VerifyTokenResponse;
+import com.huynh.ZaloCloneBe.entity.OtpPurpose;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
 import com.huynh.ZaloCloneBe.until.OtpUntil;
 import com.huynh.ZaloCloneBe.until.PhoneUntil;
@@ -30,6 +33,7 @@ public class SmsService {
 
     @Autowired
     private UserRepository userRepository;
+
     public void sendSms(String phone, String message) throws Exception {
 
         VonageClient client = VonageClient.builder()
@@ -48,55 +52,71 @@ public class SmsService {
     }
 
 
-    public void sendOtp(String phone) throws Exception {
 
-        String formatPhone = PhoneUntil.formatPhone(phone);
+    public void sendOtp(SendOtpRequest request) {
 
-        if(userRepository.existsByPhone(formatPhone)){
-            throw new AppException(ErrorCode.USER_EXISTED);
-        }
-
-        String cooldownKey="cooldown:"+formatPhone;
-
-        Boolean exist=redisTemplate.hasKey(cooldownKey);
-
-        if(Boolean.TRUE.equals(exist)){
-            throw new AppException(ErrorCode.OTP_COOLDOWN);
-        }
+        String formatPhone = PhoneUntil.formatPhone(request.getPhone());
 
         String otp = OtpUntil.generateOtp();
 
-        String key = "otp:" + formatPhone;
+        OtpPurpose purpose = request.getOtpPurpose();
+
+        String otpKey = "otp:" + purpose.name() + ":" + formatPhone;
+
+        String cooldownKey = "cooldown:" + purpose.name() + ":" + formatPhone;
+
+        switch (purpose) {
+            case REGISTER:
+                if (userRepository.existsByPhone(formatPhone)) {
+                    throw new AppException(ErrorCode.USER_EXISTED);
+                }
+                break;
+
+            case RESET_PASSWORD:
+                if (!userRepository.existsByPhone(formatPhone)) {
+                    throw new AppException(ErrorCode.USER_NOTFOUND);
+                }
+                break;
+        }
+
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(cooldownKey))) {
+            throw new AppException(ErrorCode.OTP_COOLDOWN);
+        }
 
         redisTemplate.opsForValue().set(
-                key,
+                otpKey,
                 otp,
                 Duration.ofMinutes(2)
         );
+
         redisTemplate.opsForValue().set(
                 cooldownKey,
                 "1",
                 Duration.ofSeconds(50)
         );
 
-//        sendSms(formatPhone, "Your OTP: " + otp);
-        System.out.print("Your OTP: " + otp);
+        // sendSms(formatPhone, "Your OTP: " + otp);
+
+        System.out.println("Your OTP: " + otp);
     }
-    public VerifyTokenResponse verifyOtp(String phone, String inputOtp) {
 
-        String formatPhone = PhoneUntil.formatPhone(phone);
+    public VerifyTokenResponse verifyOtp(VerifyOtpRequest request) {
 
-        String key = "otp:" + formatPhone;
+        String formatPhone = PhoneUntil.formatPhone(request.getPhone());
 
-        String attemptKey = "attempt:" + formatPhone;
+        String purpose=request.getOtpPurpose().name();
+        String key = "otp:"+purpose+":"+ formatPhone;
+
+        String attemptKey = "attempt:"+purpose+":" + formatPhone;
 
         String otp = redisTemplate.opsForValue().get(key);
 
         if (otp == null) {
+            redisTemplate.delete(attemptKey);
             throw new AppException(ErrorCode.otp_exprired);
         }
 
-        if (!inputOtp.equals(otp)) {
+        if (!request.getOtp().equals(otp)) {
 
             Long attempt = redisTemplate.opsForValue().increment(attemptKey);
             redisTemplate.expire(attemptKey, Duration.ofMinutes(5));
@@ -107,13 +127,14 @@ public class SmsService {
             throw new AppException(ErrorCode.OTP_WRONG);
 
         }
-        String verifyToken= UUID.randomUUID().toString();
+        String verifyToken = UUID.randomUUID().toString();
+
         redisTemplate.delete(key);
+
         redisTemplate.delete(attemptKey);
 
-
         redisTemplate.opsForValue().set(
-                "verify:"+verifyToken,
+                "verify:"+purpose+":" + verifyToken,
                 formatPhone,
                 Duration.ofMinutes(5)
         );

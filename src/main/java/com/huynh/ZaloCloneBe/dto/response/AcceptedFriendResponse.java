@@ -13,7 +13,7 @@ import java.util.Date;
 @Data
 @Builder
 public class AcceptedFriendResponse {
-    private Long senderId;     // Ai gửi lời mời
+    private Long senderId;
     private Long receiverId;
     private Date createdAt;
     private StatusRequest status;
