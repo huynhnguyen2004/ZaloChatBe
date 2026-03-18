@@ -17,7 +17,7 @@ public class MessageController {
     @PostMapping("/send")
     public ApiResponse<MessageResponse>sendMessage(@RequestBody MessageRequest request){
         return ApiResponse.<MessageResponse>builder()
-                .code(1001)
+                .status(200)
                 .message("gui tin nhan thanh cong")
                 .result(service.sendMessage(request))
                 .build();
@@ -25,7 +25,7 @@ public class MessageController {
     @GetMapping
     public ApiResponse<List<MessageResponse>> getMessages(@RequestParam Long conversationId){
         return ApiResponse.<List<MessageResponse>>builder()
-                .code(1001)
+                .status(200)
                 .result(service.getMessages(conversationId))
                 .build();
     }

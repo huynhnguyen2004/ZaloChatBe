@@ -107,12 +107,12 @@ public class AuthenticationService {
     @Transactional
     public void logout(String refreshToken) throws Exception {
         RefreshToken tokenEntity = refreshTokenRepository.findByToken(refreshToken).orElseThrow(
-                () -> new AppException(ErrorCode.TOKEN_NOTFOUND)
+                () -> new AppException(ErrorCode.TOKEN_NOT_FOUND)
         );
 
 
         Long userId = tokenEntity.getUser().getId();
-        User user = repository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+        User user = repository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         user.setOnline(false);
         user.setLastOnline(new Date());
         refreshTokenRepository.revokeByToken(refreshToken);
@@ -136,10 +136,10 @@ public class AuthenticationService {
 
         }
         User user = repository.findByPhone(PhoneUntil.formatPhone(request.getPhone()))
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         if (!user.getStatus()) {
-            throw new AppException(ErrorCode.STATUS_LOCK);
+            throw new AppException(ErrorCode.USER_ALREADY_LOCKED);
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
@@ -180,7 +180,7 @@ public class AuthenticationService {
     @Transactional
     public ResultLogin refresh(String refreshToken) throws Exception {
         if (refreshToken == null || refreshToken.isBlank()) {
-            throw new AppException(ErrorCode.TOKEN_NOTFOUND);
+            throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
         }
         SignedJWT jwt = SignedJWT.parse(refreshToken);
 
@@ -195,7 +195,7 @@ public class AuthenticationService {
         }
 
         RefreshToken refreshTokenEntity = refreshTokenRepository.findByToken(refreshToken)
-                .orElseThrow(() -> new AppException(ErrorCode.TOKEN_NOTFOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.TOKEN_NOT_FOUND));
 
         if (refreshTokenEntity.getRevoked()) {
             throw new AppException(ErrorCode.TOKEN_REVOKED);
@@ -240,14 +240,14 @@ public class AuthenticationService {
         String phone=redisTemplate.opsForValue().get(key);
 
         if(phone==null){
-            throw new AppException(ErrorCode.OTP_NOTFOUND);
+            throw new AppException(ErrorCode.OTP_NOT_FOUND);
         }
         if(repository.existsByPhone(phone)){
             throw new AppException(ErrorCode.USER_EXISTED);
         }
 
         if (!PasswordUntil.validatePassword(request.getPassword())) {
-            throw new AppException(ErrorCode.PASS_VALID);
+            throw new AppException(ErrorCode.PASSWORD_INVALID);
         }
 
         User user = User.builder()
@@ -273,15 +273,15 @@ public class AuthenticationService {
         String phone=redisTemplate.opsForValue().get(key);
 
         if(phone==null){
-            throw new AppException(ErrorCode.OTP_NOTFOUND);
+            throw new AppException(ErrorCode.OTP_NOT_FOUND);
         }
 
         User user=repository.findByPhone(phone).orElseThrow(
-                ()-> new AppException(ErrorCode.USER_NOTFOUND)
+                ()-> new AppException(ErrorCode.USER_NOT_FOUND)
         );
 
         if (!PasswordUntil.validatePassword(request.getPassword())) {
-            throw new AppException(ErrorCode.PASS_VALID);
+            throw new AppException(ErrorCode.PASSWORD_INVALID);
         }
 
         user.setPassword(passwordEncoder.encode(request.getPassword()));

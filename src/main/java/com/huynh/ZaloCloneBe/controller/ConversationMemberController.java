@@ -22,7 +22,7 @@ public class ConversationMemberController {
             @RequestParam Long userId
     ) {
         return ApiResponse.<List<ConversationItemResponse>>builder()
-                .code(1000)
+                .status(200)
                 .message("Lấy danh sách hội thoại thành công")
                 .result(service.getUserConversations(userId))
                 .build();

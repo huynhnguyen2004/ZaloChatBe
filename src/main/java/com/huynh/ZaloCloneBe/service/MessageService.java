@@ -34,7 +34,7 @@ public class MessageService {
     public MessageResponse sendMessage(MessageRequest request) {
 
         if (request.getContent() == null) {
-            throw new AppException(ErrorCode.CONTENT_NULL);
+            throw new AppException(ErrorCode.CONTENT_REQUIRED);
         }
 
         User sender = userRepository.getReferenceById(request.getSenderId());

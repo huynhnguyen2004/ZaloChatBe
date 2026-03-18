@@ -25,7 +25,7 @@ public class UserController {
         UserResponse userResponse = service.getCurrentUser(token);
 
         return ApiResponse.<UserResponse>builder()
-                .code(1001)
+                .status(200)
                 .message("Lấy thông tin người dùng hiện tại thành công")
                 .result(userResponse)
                 .build();
@@ -37,7 +37,7 @@ public class UserController {
             @RequestParam String key) {
 
         return ApiResponse.<List<SearchResponse>>builder()
-                .code(1001)
+                .status(200)
                 .message("Tìm kiếm thành công")
                 .result(service.search(userId, key))
                 .build();
@@ -53,7 +53,7 @@ public class UserController {
 
 
         return ApiResponse.<UserResponse>builder()
-                .code(1001)
+                .status(200)
                 .message("thêm ảnh đại diện thành công")
                 .result(service.updateAvatar(userId, avatarUrl))
                 .build();
@@ -70,7 +70,7 @@ public class UserController {
 
 
         return ApiResponse.<UserResponse>builder()
-                .code(1001)
+                .status(200)
                 .message("thêm ảnh bìa thành công")
                 .result(service.updateCover(userId, coverUrl))
                 .build();
@@ -83,7 +83,7 @@ public class UserController {
             @RequestBody UpdateRequest request
     ) {
         return ApiResponse.<UserResponse>builder()
-                .code(1001)
+                .status(200)
                 .message("Sua thong tin thanh cong")
                 .result(service.updateProfile(userId, request))
                 .build();
@@ -95,7 +95,7 @@ public class UserController {
             @RequestBody UpdatePassword request
     ) {
         return ApiResponse.<UpdatePasswordResponse>builder()
-                .code(1001)
+                .status(200)
                 .message("Đổi mật khẩu thanh cong")
                 .result(service.updatePassWord(userId, request))
                 .build();
@@ -107,7 +107,7 @@ public class UserController {
             @RequestParam Long otherId
     )throws Exception {
         return ApiResponse.<UserProfileResponse>builder()
-                .code(1001)
+                .status(200)
                 .message("Xem trang cá nhân")
                 .result(service.getUserProfile(meId, otherId))
                 .build();
@@ -120,7 +120,7 @@ public class UserController {
 
     ) {
         return ApiResponse.<PageResponse<UserResponse>>builder()
-                .code(1001)
+                .status(200)
                 .message("Lay danh sach khach hang thanh cong")
                 .result(service.getCustomer(page, size))
                 .build();
@@ -130,7 +130,7 @@ public class UserController {
     public ApiResponse<Void> lock(@RequestParam Long userId) {
         service.lockUser(userId);
         return ApiResponse.<Void>builder()
-                .code(1001)
+                .status(200)
                 .message("Đã khóa thành công")
                 .build();
     }
@@ -139,7 +139,7 @@ public class UserController {
     public ApiResponse<Void> unlock(@RequestParam Long userId) {
         service.unlockUser(userId);
         return ApiResponse.<Void>builder()
-                .code(1001)
+                .status(200)
                 .message("Đã kích hoạt thành công")
                 .build();
     }
@@ -150,7 +150,7 @@ public class UserController {
                                                                   @RequestParam(defaultValue = "5") int size) {
 
         return ApiResponse.<PageResponse<UserResponse>>builder()
-                .code(1001)
+                .status(200)
                 .message("tim kiem khach hang thanh cong")
                 .result(service.searchCustomer(key, page, size))
                 .build();
@@ -161,7 +161,7 @@ public class UserController {
                                                                   @RequestParam(defaultValue = "0") int page,
                                                                   @RequestParam(defaultValue = "5") int size) {
         return ApiResponse.<PageResponse<UserResponse>>builder()
-                .code(1001)
+                .status(200)
                 .message("loc khach hang thanh cong")
                 .result(service.filterCustomer(status, page, size))
                 .build();
@@ -170,7 +170,7 @@ public class UserController {
     @GetMapping("/detail")
     public ApiResponse<UserResponse> getDetailUser(@RequestParam Long userId) {
         return ApiResponse.<UserResponse>builder()
-                .code(1001)
+                .status(200)
                 .message("lay chi tiet khach hang thanh cong")
                 .result(service.getUserDetail(userId))
                 .build();

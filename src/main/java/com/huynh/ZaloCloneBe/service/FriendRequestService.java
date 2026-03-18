@@ -52,19 +52,19 @@ public class FriendRequestService {
             throw new AppException(ErrorCode.FRIEND_ALREADY);
         }
         if (repository.existsBySenderIdAndReceiverIdAndStatus(request.getSenderId(), request.getReceiverId(),StatusRequest.PENDING)) {
-            throw new AppException(ErrorCode.SEND_REQUEST_ERROR);
+            throw new AppException(ErrorCode.REQUEST_ALREADY_SENT);
         }
         if (repository.existsBySenderIdAndReceiverIdAndStatus(request.getReceiverId(), request.getSenderId(),StatusRequest.PENDING)) {
-            throw new AppException(ErrorCode.SEND_REQUEST_ERROR);
+            throw new AppException(ErrorCode.REQUEST_ALREADY_SENT);
         }
         if (request.getSenderId().equals(request.getReceiverId())) {
-            throw new AppException(ErrorCode.REQUEST_FRIEND_ERROR);
+            throw new AppException(ErrorCode.REQUEST_FRIEND_INVALID);
         }
 
         User sender = userRepository.findById(request.getSenderId())
-                .orElseThrow(() -> new AppException(ErrorCode.SEND_NOTFOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.SEND_NOT_FOUND));
         User receiver = userRepository.findById(request.getReceiverId())
-                .orElseThrow(() -> new AppException(ErrorCode.RECEIVE_NOTFOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.RECEIVE_NOT_FOUND));
 
         FriendRequest fr = mapper.toEntity(request);
         fr.setCreatedAt(new Date());

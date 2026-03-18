@@ -44,7 +44,7 @@ public class AuthenController {
                 .build();
         ApiResponse<AuthenResponse> apiResponse =
                 ApiResponse.<AuthenResponse>builder()
-                        .code(1001)
+                        .status(200)
                         .message("Đăng nhập thành công")
                         .result(authenResponse)
                         .build();
@@ -69,14 +69,14 @@ public class AuthenController {
         response.addHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
 
         return ApiResponse.<Void>builder()
-                .code(1001)
+                .status(200)
                 .message("cap nhat offline thanh cong")
                 .build();
     }
     @PostMapping("/register")
     public ApiResponse<UserResponse>createUser(@RequestBody RegisterRequest request){
         return ApiResponse.<UserResponse>builder()
-                .code(1001)
+                .status(200)
                 .message("Tạo user thành công")
                 .result(authenticationService.register(request))
                 .build();
@@ -85,7 +85,7 @@ public class AuthenController {
     public ApiResponse<Void>resetPassword(@RequestBody ResetPassWordRequest request){
         authenticationService.resetPassword(request);
         return ApiResponse.<Void>builder()
-                .code(1001)
+                .status(200)
                 .message("Reset pass thanh cong")
                 .build();
     }

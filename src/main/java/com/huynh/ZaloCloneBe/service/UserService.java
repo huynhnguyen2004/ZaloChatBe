@@ -65,7 +65,7 @@ public class  UserService {
             return objectMapper.readValue(cachUser,UserResponse.class);
         }
         User user = repository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         UserResponse userResponse=mapper.toDto(user);
         try {
@@ -97,7 +97,7 @@ public class  UserService {
 
     }
     public List<SearchResponse>search(Long userId, String key){
-        repository.findById(userId).orElseThrow(()-> new AppException(ErrorCode.USER_NOTFOUND));
+        repository.findById(userId).orElseThrow(()-> new AppException(ErrorCode.USER_NOT_FOUND));
         List<User> lst=repository.search(key);
 
         List<SearchResponse>searchResponseList=new ArrayList<>();
@@ -120,7 +120,7 @@ public class  UserService {
     @Transactional
     public UserResponse updateAvatar(Long userId, String avatarUrl) {
         User user = repository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         user.setAvatarUrl(avatarUrl);
         return mapper.toDto(user);
@@ -128,14 +128,14 @@ public class  UserService {
     @Transactional
     public UserResponse updateCover(Long userId, String coverUrl) {
         User user = repository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         user.setCoverUrl(coverUrl);
         return mapper.toDto(user);
     }
     @Transactional
     public UserResponse updateProfile(Long userId, UpdateRequest request){
-        User user=repository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOTFOUND));
+        User user=repository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
         if(request.getFirstname()!=null){
             user.setFirstname(request.getFirstname());
         }
@@ -153,22 +153,22 @@ public class  UserService {
     }
     @Transactional
     public UpdatePasswordResponse updatePassWord(Long userId, UpdatePassword request){
-        User user=repository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOTFOUND));
+        User user=repository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
         String oldpass=user.getPassword();
         if(request.getOldPassword()==null){
-            throw new AppException(ErrorCode.OLDPASS_NULL);
+            throw new AppException(ErrorCode.OLD_PASSWORD_REQUIRED);
         }
         if(request.getNewPassword()==null){
-            throw new AppException(ErrorCode.NEWPASS_NULL);
+            throw new AppException(ErrorCode.NEW_PASSWORD_REQUIRED);
         }
         if(!passwordEncoder.matches( request.getOldPassword(),user.getPassword())){
-            throw new AppException(ErrorCode.PASS_ERROR);
+            throw new AppException(ErrorCode.PASSWORD_WRONG);
         }
         if(passwordEncoder.matches( request.getNewPassword(), user.getPassword())){
-            throw new AppException(ErrorCode.PASS_DIF);
+            throw new AppException(ErrorCode.PASSWORD_SAME_AS_OLD);
         }
         if(hasSpecialCharacter(request.getNewPassword())||request.getNewPassword().length()<6){
-            throw new AppException(ErrorCode.PASS_VALID);
+            throw new AppException(ErrorCode.PASSWORD_INVALID);
         }
         String hashpass=passwordEncoder.encode(request.getNewPassword());
         user.setPassword(hashpass);
@@ -214,7 +214,7 @@ public class  UserService {
         } else {
 
             User user = repository.findById(otherId)
-                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
             profile = UserProfileResponse.builder()
                     .id(user.getId())
@@ -242,7 +242,7 @@ public class  UserService {
     @Transactional
     public void lockUser(Long userId) {
         User user = repository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         if (!user.getStatus()) {
             throw new AppException(ErrorCode.USER_ALREADY_LOCKED);
@@ -253,7 +253,7 @@ public class  UserService {
     @Transactional
     public void unlockUser(Long userId) {
         User user = repository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOTFOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         if (user.getStatus()) {
             throw new AppException(ErrorCode.USER_ALREADY_ACTIVE);
@@ -300,7 +300,7 @@ public class  UserService {
     }
     public UserResponse getUserDetail(Long userId){
         User user=repository.findById(userId).orElseThrow(
-                ()->new AppException(ErrorCode.USER_NOTFOUND)
+                ()->new AppException(ErrorCode.USER_NOT_FOUND)
         );
         return mapper.toDto(user);
     }

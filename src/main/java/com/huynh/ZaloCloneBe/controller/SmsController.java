@@ -20,7 +20,7 @@ public class SmsController {
     public ApiResponse<Void> sendOtp(@RequestBody SendOtpRequest request) throws Exception{
         smsService.sendOtp(request);
         return ApiResponse.<Void>builder()
-                .code(200)
+                .status(200)
                 .message("Gui otp thanh cong")
                 .build();
     }
@@ -28,7 +28,7 @@ public class SmsController {
     public ApiResponse<VerifyTokenResponse>verifyOtp(@RequestBody VerifyOtpRequest request) throws Exception{
 
         return ApiResponse.<VerifyTokenResponse>builder()
-                .code(200)
+                .status(200)
                 .message("Verify thanh cong")
                 .result( smsService.verifyOtp(request))
                 .build();

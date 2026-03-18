@@ -45,7 +45,7 @@ public class FriendService {
    public void unFriend(Long user1Id,Long user2Id){
         boolean isFriend= friendRepository.existsFriend(user1Id, user2Id);
         if(!isFriend){
-            throw new AppException(ErrorCode.FRIEND_notfound);
+            throw new AppException(ErrorCode.FRIEND_NOT_FOUND);
         }else{
             friendRepository.unFriend(user1Id, user2Id);
         }

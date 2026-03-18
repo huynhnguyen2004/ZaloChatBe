@@ -16,7 +16,7 @@ public class AdminController {
     @GetMapping("/dashboard")
     public ApiResponse<AdminDashBoardResponse>getDashBoard(){
         return ApiResponse.<AdminDashBoardResponse>builder()
-                .code(1001)
+                .status(200)
                 .message("lay thong ke thanh cong")
                 .result(service.getStatistic())
                 .build();

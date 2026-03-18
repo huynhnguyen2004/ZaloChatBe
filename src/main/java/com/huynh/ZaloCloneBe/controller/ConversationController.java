@@ -25,7 +25,7 @@ public class ConversationController {
         ConversationResponse response =
                 new ConversationResponse(conversation.getId());
         return ApiResponse.<ConversationResponse>builder()
-                .code(1001)
+                .status(200)
                 .message("lay conver thành cong")
                 .result(response)
                 .build();

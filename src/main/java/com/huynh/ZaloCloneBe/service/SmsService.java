@@ -74,7 +74,7 @@ public class SmsService {
 
             case RESET_PASSWORD:
                 if (!userRepository.existsByPhone(formatPhone)) {
-                    throw new AppException(ErrorCode.USER_NOTFOUND);
+                    throw new AppException(ErrorCode.USER_NOT_FOUND);
                 }
                 break;
         }
@@ -113,7 +113,7 @@ public class SmsService {
 
         if (otp == null) {
             redisTemplate.delete(attemptKey);
-            throw new AppException(ErrorCode.otp_exprired);
+            throw new AppException(ErrorCode.OTP_EXPIRED);
         }
 
         if (!request.getOtp().equals(otp)) {

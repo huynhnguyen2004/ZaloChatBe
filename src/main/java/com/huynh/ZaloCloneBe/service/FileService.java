@@ -19,7 +19,7 @@ public class FileService {
             throw new AppException(ErrorCode.FILE_EMPTY);
         }
         if(!file.getContentType().startsWith("image/")){
-            throw new AppException(ErrorCode.JUST_IMAGE);
+            throw new AppException(ErrorCode.INVALID_IMAGE_FORMAT);
         }
         Path userDir=root.resolve(("user_")+userId);
         Files.createDirectories(userDir);
@@ -34,7 +34,7 @@ public class FileService {
             throw new AppException(ErrorCode.FILE_EMPTY);
         }
         if(!file.getContentType().startsWith("image/")){
-            throw new AppException(ErrorCode.JUST_IMAGE);
+            throw new AppException(ErrorCode.INVALID_IMAGE_FORMAT);
         }
         Path userDir=rootCover.resolve(("user_")+userId);
         Files.createDirectories(userDir);

@@ -5,47 +5,65 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ErrorCode {
-    USER_EXISTED(1001,"SĐT đã tồn tại"),
-    USER_NOTFOUND(1002,"Tài khoản không tồn tại"),
-    UNAUTHORIZED(1003,"Thông tin đăng nhập sai"),
-    PASS_VALID(1014,"Mật khẩu phải có độ dài lớn hơn 5 kí tự và không được chứa kí tự đặc biệt"),
-    REQUEST_FRIEND_ERROR(1004,"khong the gui loi moi chinh minh"),
-    REQUEST_NOTFOUND(1008,"REQUEST_NOTFOUND"),
-    REQUEST_ALREADY_ACCEPTED(1009,"REQUEST_ALREADY_ACCEPTED"),
-    REQUEST_CANNOT_CANCEL(1013,"REQUEST_CANNOT_CANCEL"),
-    REQUEST_CANNOT_REJECT(1021,"Không thể từ chối"),
-    SEND_REQUEST_ERROR(1005,"Da gui loi moi roi"),
-    SEND_NOTFOUND(1006,"SEND NOT FOUND"),
-    RECEIVE_NOTFOUND(1007,"rECEIVE NOT FOUND"),
-    FRIEND_ALREADY(1010,"FRIEND_ALREADY"),
-    CONTENT_NULL(1011,"CONTENT NOT NULL"),
-    FRIEND_notfound(1012,"FRIEND_not found"),
-    MESS_NOTFOUND(1013,"MESS NOT FOUND"),
-    CAPTCHA_INVALID(1014,"Capcha không hợp lệ"),
-    CAPTCHA_REQUIRED(1028,"CAPTCHA_REQUIRED"),
-    FILE_EMPTY(1015,"FILE RONG"),
-    JUST_IMAGE(1016,"CHI ANH jpg,png"),
-    OLDPASS_NULL(1017,"Vui lòng nhập mật khẩu hiện tại"),
-    NEWPASS_NULL(1018,"Vui lòng nhập mật khẩu mới"),
-    PASS_ERROR(1019,"Mật khẩu hiện tại sai"),
-    PASS_DIF(1020,"Mật khẩu phải khác mật khẩu hiện tại"),
-    STATUS_LOCK(1021,"Tài khoản bạn đã bị khóa"),
-    USER_ALREADY_LOCKED(1022,"Tài khoản đã khóa rồi"),
-    USER_ALREADY_ACTIVE(1023,"Tài khoản này đã mở rồi"),
-    TOKEN_INVALID(1024,"token khong hop le"),
-    TOKEN_EXPIRED(1025,"token het han"),
-    TOKEN_NOTFOUND(1026,"TOKEN NOT FOUND"),
-    TOKEN_REVOKED(1027,"TOKEN REVOKED"),
-   IVALID_PHONE(1028,"Invalid phone number"),
-    OTP_COOLDOWN(1029,"Vui lòng gửi lại OTP sau 60 giây "),
-    otp_exprired(1030,"OTP đã hết hạn,vui lòng thử lại"),
-    OTP_BLOCKED(1031,"OTP đã bị khóa"),
-    OTP_WRONG(1032,"OTP bị sai"),
-    OTP_NOTFOUND(1033,"Chưa xác minh OTP")
+    // ================= AUTH =================
+    USER_EXISTED(409, "USER_EXISTED", "SĐT đã tồn tại"),
+    USER_NOT_FOUND(404, "USER_NOT_FOUND", "Tài khoản không tồn tại"),
+    UNAUTHORIZED(401, "UNAUTHORIZED", "Thông tin đăng nhập sai"),
+    ACCOUNT_LOCKED(423, "ACCOUNT_LOCKED", "Tài khoản bạn đã bị khóa"),
+    USER_ALREADY_LOCKED(409, "USER_ALREADY_LOCKED", "Tài khoản đã khóa rồi"),
+    USER_ALREADY_ACTIVE(409, "USER_ALREADY_ACTIVE", "Tài khoản này đã mở rồi"),
 
+    // ================= PASSWORD =================
+    PASSWORD_INVALID(400, "PASSWORD_INVALID", "Mật khẩu không hợp lệ"),
+    PASSWORD_TOO_SHORT(400, "PASSWORD_TOO_SHORT", "Mật khẩu phải >= 6 ký tự"),
+    PASSWORD_WRONG(400, "PASSWORD_WRONG", "Mật khẩu hiện tại sai"),
+    PASSWORD_SAME_AS_OLD(400, "PASSWORD_SAME_AS_OLD", "Mật khẩu phải khác mật khẩu hiện tại"),
+    OLD_PASSWORD_REQUIRED(400, "OLD_PASSWORD_REQUIRED", "Vui lòng nhập mật khẩu hiện tại"),
+    NEW_PASSWORD_REQUIRED(400, "NEW_PASSWORD_REQUIRED", "Vui lòng nhập mật khẩu mới"),
 
-    ;
+    // ================= FRIEND =================
+    REQUEST_FRIEND_INVALID(400, "REQUEST_FRIEND_INVALID", "Không thể gửi lời mời chính mình"),
+    REQUEST_NOT_FOUND(404, "REQUEST_NOT_FOUND", "Không tìm thấy lời mời"),
+    REQUEST_ALREADY_ACCEPTED(400, "REQUEST_ALREADY_ACCEPTED", "Lời mời đã được chấp nhận"),
+    REQUEST_CANNOT_CANCEL(400, "REQUEST_CANNOT_CANCEL", "Không thể hủy lời mời"),
+    REQUEST_CANNOT_REJECT(400, "REQUEST_CANNOT_REJECT", "Không thể từ chối"),
+    FRIEND_ALREADY(409, "FRIEND_ALREADY", "Đã là bạn bè"),
+    FRIEND_NOT_FOUND(404, "FRIEND_NOT_FOUND", "Không tìm thấy bạn bè"),
 
-    private int code;
-    private String message;
+    // ================= MESSAGE =================
+    MESSAGE_NOT_FOUND(404, "MESSAGE_NOT_FOUND", "Không tìm thấy tin nhắn"),
+    CONTENT_REQUIRED(400, "CONTENT_REQUIRED", "Nội dung không được để trống"),
+
+    // ================= REQUEST =================
+    REQUEST_ALREADY_SENT(400, "REQUEST_ALREADY_SENT", "Đã gửi lời mời rồi"),
+    SEND_NOT_FOUND(404, "SEND_NOT_FOUND", "Không tìm thấy người gửi"),
+    RECEIVE_NOT_FOUND(404, "RECEIVE_NOT_FOUND", "Không tìm thấy người nhận"),
+
+    // ================= FILE =================
+    FILE_EMPTY(400, "FILE_EMPTY", "File rỗng"),
+    INVALID_IMAGE_FORMAT(400, "INVALID_IMAGE_FORMAT", "Chỉ chấp nhận jpg, png"),
+
+    // ================= CAPTCHA =================
+    CAPTCHA_INVALID(400, "CAPTCHA_INVALID", "Captcha không hợp lệ"),
+    CAPTCHA_REQUIRED(400, "CAPTCHA_REQUIRED", "Yêu cầu nhập captcha"),
+
+    // ================= TOKEN =================
+    TOKEN_INVALID(401, "TOKEN_INVALID", "Token không hợp lệ"),
+    TOKEN_EXPIRED(401, "TOKEN_EXPIRED", "Token hết hạn"),
+    TOKEN_NOT_FOUND(404, "TOKEN_NOT_FOUND", "Không tìm thấy token"),
+    TOKEN_REVOKED(401, "TOKEN_REVOKED", "Token đã bị thu hồi"),
+
+    // ================= PHONE =================
+    INVALID_PHONE(400, "INVALID_PHONE", "Số điện thoại không hợp lệ"),
+
+    // ================= OTP =================
+    OTP_COOLDOWN(429, "OTP_COOLDOWN", "Vui lòng gửi lại OTP sau 60 giây"),
+    OTP_EXPIRED(400, "OTP_EXPIRED", "OTP đã hết hạn"),
+    OTP_BLOCKED(403, "OTP_BLOCKED", "OTP đã bị khóa"),
+    OTP_WRONG(400, "OTP_WRONG", "OTP không đúng"),
+    OTP_NOT_FOUND(404, "OTP_NOT_FOUND", "Chưa xác minh OTP");
+
+    private final int status;
+    private final String code;
+    private final String message;
 }

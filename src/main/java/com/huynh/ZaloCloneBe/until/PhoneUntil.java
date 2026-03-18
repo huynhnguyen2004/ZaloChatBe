@@ -17,7 +17,7 @@ public class PhoneUntil {
         }
 
         if(!phone.startsWith("84")){
-            throw new AppException(ErrorCode.IVALID_PHONE);
+            throw new AppException(ErrorCode.INVALID_PHONE);
         }
 
         return phone;
