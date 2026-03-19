@@ -14,7 +14,6 @@ import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import com.huynh.ZaloCloneBe.mapper.UserMapper;
 import com.huynh.ZaloCloneBe.repository.RefreshTokenRepository;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
-import com.huynh.ZaloCloneBe.until.PasswordUntil;
 import com.huynh.ZaloCloneBe.until.PhoneUntil;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -246,9 +245,6 @@ public class AuthenticationService {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
 
-        if (!PasswordUntil.validatePassword(request.getPassword())) {
-            throw new AppException(ErrorCode.PASSWORD_INVALID);
-        }
 
         User user = User.builder()
                 .phone(phone)
@@ -280,9 +276,6 @@ public class AuthenticationService {
                 ()-> new AppException(ErrorCode.USER_NOT_FOUND)
         );
 
-        if (!PasswordUntil.validatePassword(request.getPassword())) {
-            throw new AppException(ErrorCode.PASSWORD_INVALID);
-        }
 
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 

@@ -6,6 +6,7 @@ import com.huynh.ZaloCloneBe.dto.request.UserRequest;
 import com.huynh.ZaloCloneBe.dto.response.*;
 import com.huynh.ZaloCloneBe.service.FileService;
 import com.huynh.ZaloCloneBe.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -92,7 +93,7 @@ public class UserController {
     @PutMapping("/editPass")
     public ApiResponse<UpdatePasswordResponse> updateProfile(
             @RequestParam Long userId,
-            @RequestBody UpdatePassword request
+           @Valid @RequestBody UpdatePassword request
     ) {
         return ApiResponse.<UpdatePasswordResponse>builder()
                 .status(200)

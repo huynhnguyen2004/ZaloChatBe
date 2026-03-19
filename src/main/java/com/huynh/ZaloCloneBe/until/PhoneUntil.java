@@ -15,10 +15,10 @@ public class PhoneUntil {
         if(phone.startsWith("0")){
             phone = "84" + phone.substring(1);
         }
-
-        if(!phone.startsWith("84")){
-            throw new AppException(ErrorCode.INVALID_PHONE);
+        if(phone.startsWith("+84")){
+            phone = "84" + phone.substring(3);
         }
+
 
         return phone;
     }

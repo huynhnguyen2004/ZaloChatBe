@@ -15,9 +15,6 @@ public class FileService {
     private final Path root = Paths.get("uploads/avatars");
     private final Path rootCover = Paths.get("uploads/covers");
     public String uploadAvatar(MultipartFile file,Long userId) throws Exception{
-        if(file.isEmpty()){
-            throw new AppException(ErrorCode.FILE_EMPTY);
-        }
         if(!file.getContentType().startsWith("image/")){
             throw new AppException(ErrorCode.INVALID_IMAGE_FORMAT);
         }
@@ -30,9 +27,6 @@ public class FileService {
         return "/uploads/avatars/user_"+userId+"/"+filename;
     }
     public String uploadCover(MultipartFile file,Long userId) throws Exception{
-        if(file.isEmpty()){
-            throw new AppException(ErrorCode.FILE_EMPTY);
-        }
         if(!file.getContentType().startsWith("image/")){
             throw new AppException(ErrorCode.INVALID_IMAGE_FORMAT);
         }

@@ -5,6 +5,7 @@ import com.huynh.ZaloCloneBe.dto.request.VerifyOtpRequest;
 import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
 import com.huynh.ZaloCloneBe.dto.response.VerifyTokenResponse;
 import com.huynh.ZaloCloneBe.service.SmsService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,7 +18,7 @@ public class SmsController {
     @Autowired
     private SmsService smsService;
     @PostMapping("/send-otp")
-    public ApiResponse<Void> sendOtp(@RequestBody SendOtpRequest request) throws Exception{
+    public ApiResponse<Void> sendOtp(@Valid  @RequestBody SendOtpRequest request) throws Exception{
         smsService.sendOtp(request);
         return ApiResponse.<Void>builder()
                 .status(200)
@@ -25,7 +26,7 @@ public class SmsController {
                 .build();
     }
     @PostMapping("/verify-otp")
-    public ApiResponse<VerifyTokenResponse>verifyOtp(@RequestBody VerifyOtpRequest request) throws Exception{
+    public ApiResponse<VerifyTokenResponse>verifyOtp(@Valid @RequestBody VerifyOtpRequest request) throws Exception{
 
         return ApiResponse.<VerifyTokenResponse>builder()
                 .status(200)

@@ -11,6 +11,7 @@ import com.huynh.ZaloCloneBe.dto.response.ResultLogin;
 import com.huynh.ZaloCloneBe.dto.response.UserResponse;
 import com.huynh.ZaloCloneBe.service.AuthenticationService;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -27,7 +28,7 @@ public class AuthenController {
     private JwtProperties jwtProperties;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthenResponse>> login(@RequestBody AuthenRequest request, HttpServletResponse response) throws Exception {
+    public ResponseEntity<ApiResponse<AuthenResponse>> login(@Valid  @RequestBody AuthenRequest request, HttpServletResponse response) throws Exception {
         ResultLogin result = authenticationService.login(request);
 
         ResponseCookie cookie = ResponseCookie.from("refresh_token", result.getRefreshToken())
@@ -74,7 +75,7 @@ public class AuthenController {
                 .build();
     }
     @PostMapping("/register")
-    public ApiResponse<UserResponse>createUser(@RequestBody RegisterRequest request){
+    public ApiResponse<UserResponse>createUser(@Valid @RequestBody RegisterRequest request){
         return ApiResponse.<UserResponse>builder()
                 .status(200)
                 .message("Tạo user thành công")

@@ -46,10 +46,7 @@ public class  UserService {
     private StringRedisTemplate redisTemplate;
     private ObjectMapper objectMapper=new ObjectMapper();
 
-    public  boolean hasSpecialCharacter(String password) {
-        if (password == null) return false;
-        return password.matches(".*[^a-zA-Z0-9].*");
-    }
+
     public UserResponse getCurrentUser(String token) throws Exception {
 
         String jwt = token.substring(7);
@@ -155,21 +152,15 @@ public class  UserService {
     public UpdatePasswordResponse updatePassWord(Long userId, UpdatePassword request){
         User user=repository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
         String oldpass=user.getPassword();
-        if(request.getOldPassword()==null){
-            throw new AppException(ErrorCode.OLD_PASSWORD_REQUIRED);
-        }
-        if(request.getNewPassword()==null){
-            throw new AppException(ErrorCode.NEW_PASSWORD_REQUIRED);
-        }
+
+
         if(!passwordEncoder.matches( request.getOldPassword(),user.getPassword())){
             throw new AppException(ErrorCode.PASSWORD_WRONG);
         }
         if(passwordEncoder.matches( request.getNewPassword(), user.getPassword())){
             throw new AppException(ErrorCode.PASSWORD_SAME_AS_OLD);
         }
-        if(hasSpecialCharacter(request.getNewPassword())||request.getNewPassword().length()<6){
-            throw new AppException(ErrorCode.PASSWORD_INVALID);
-        }
+
         String hashpass=passwordEncoder.encode(request.getNewPassword());
         user.setPassword(hashpass);
 

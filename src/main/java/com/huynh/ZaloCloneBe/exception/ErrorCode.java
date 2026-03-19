@@ -14,12 +14,8 @@ public enum ErrorCode {
     USER_ALREADY_ACTIVE(409, "USER_ALREADY_ACTIVE", "Tài khoản này đã mở rồi"),
 
     // ================= PASSWORD =================
-    PASSWORD_INVALID(400, "PASSWORD_INVALID", "Mật khẩu không hợp lệ"),
-    PASSWORD_TOO_SHORT(400, "PASSWORD_TOO_SHORT", "Mật khẩu phải >= 6 ký tự"),
     PASSWORD_WRONG(400, "PASSWORD_WRONG", "Mật khẩu hiện tại sai"),
     PASSWORD_SAME_AS_OLD(400, "PASSWORD_SAME_AS_OLD", "Mật khẩu phải khác mật khẩu hiện tại"),
-    OLD_PASSWORD_REQUIRED(400, "OLD_PASSWORD_REQUIRED", "Vui lòng nhập mật khẩu hiện tại"),
-    NEW_PASSWORD_REQUIRED(400, "NEW_PASSWORD_REQUIRED", "Vui lòng nhập mật khẩu mới"),
 
     // ================= FRIEND =================
     REQUEST_FRIEND_INVALID(400, "REQUEST_FRIEND_INVALID", "Không thể gửi lời mời chính mình"),
@@ -40,7 +36,6 @@ public enum ErrorCode {
     RECEIVE_NOT_FOUND(404, "RECEIVE_NOT_FOUND", "Không tìm thấy người nhận"),
 
     // ================= FILE =================
-    FILE_EMPTY(400, "FILE_EMPTY", "File rỗng"),
     INVALID_IMAGE_FORMAT(400, "INVALID_IMAGE_FORMAT", "Chỉ chấp nhận jpg, png"),
 
     // ================= CAPTCHA =================
@@ -53,8 +48,7 @@ public enum ErrorCode {
     TOKEN_NOT_FOUND(404, "TOKEN_NOT_FOUND", "Không tìm thấy token"),
     TOKEN_REVOKED(401, "TOKEN_REVOKED", "Token đã bị thu hồi"),
 
-    // ================= PHONE =================
-    INVALID_PHONE(400, "INVALID_PHONE", "Số điện thoại không hợp lệ"),
+
 
     // ================= OTP =================
     OTP_COOLDOWN(429, "OTP_COOLDOWN", "Vui lòng gửi lại OTP sau 60 giây"),
