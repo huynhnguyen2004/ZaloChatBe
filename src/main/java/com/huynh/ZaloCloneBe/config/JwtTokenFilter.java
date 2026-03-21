@@ -1,11 +1,7 @@
 package com.huynh.ZaloCloneBe.config;
 
-import com.huynh.ZaloCloneBe.dto.response.UserPrincipal;
 import com.huynh.ZaloCloneBe.entity.User;
-import com.huynh.ZaloCloneBe.exception.AppException;
-import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
-import com.huynh.ZaloCloneBe.service.UserService;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.servlet.FilterChain;
@@ -31,6 +27,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private UserRepository userRepository;
     @Autowired
     private JwtProperties jwtProperties;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -77,31 +75,30 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 return;
             }
             Long userId = Long.parseLong(jwt.getJWTClaimsSet().getSubject());
+            String role=jwt.getJWTClaimsSet().getStringClaim("role");
+            String jti=jwt.getJWTClaimsSet().getJWTID();
+            String key="blacklist:"+jti;
 
-            User user = userRepository.findById(userId).orElse(null);
-            if (user == null) {
+
+            if (userId==null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
-
-            if (!user.getStatus()) {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            if(redisTemplate.hasKey(key)){
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("""
-                        {
-                           "message": "USER_NOT_FOUND"
-                        }
+                         {
+                                  "message": "TOKEN_INVALID"
+                                }
                         """);
                 return;
+
             }
-            UserPrincipal userPrincipal = UserPrincipal.builder()
-                    .id(user.getId())
-                    .firstname(user.getFirstname())
-                    .lastname(user.getLastname())
-                    .phone(user.getPhone())
-                    .role(user.getRole())
-                    .build();
+
+
+
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    userPrincipal, null, List.of(new SimpleGrantedAuthority("ROLE_" + userPrincipal.getRole()))
+                    userId, null, List.of(new SimpleGrantedAuthority("ROLE_" + role))
             );
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 

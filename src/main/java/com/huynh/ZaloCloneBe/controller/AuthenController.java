@@ -4,7 +4,6 @@ import com.huynh.ZaloCloneBe.config.JwtProperties;
 import com.huynh.ZaloCloneBe.dto.request.AuthenRequest;
 import com.huynh.ZaloCloneBe.dto.request.RegisterRequest;
 import com.huynh.ZaloCloneBe.dto.request.ResetPassWordRequest;
-import com.huynh.ZaloCloneBe.dto.request.UserRequest;
 import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
 import com.huynh.ZaloCloneBe.dto.response.AuthenResponse;
 import com.huynh.ZaloCloneBe.dto.response.ResultLogin;
@@ -54,10 +53,10 @@ public class AuthenController {
     }
 
     @PutMapping("/logout")
-    public ApiResponse<Void> logout( @CookieValue(value = "refresh_token", required = false) String refreshToken,
+    public ApiResponse<Void> logout(@RequestHeader(value = "Authorization",required = false)String accessToken, @CookieValue(value = "refresh_token", required = false) String refreshToken,
                                     HttpServletResponse response) throws Exception {
         if(refreshToken!=null) {
-            authenticationService.logout(refreshToken);
+            authenticationService.logout(accessToken, refreshToken);
         }
         ResponseCookie clearCookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)

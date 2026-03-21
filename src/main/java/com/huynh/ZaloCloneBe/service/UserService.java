@@ -56,23 +56,13 @@ public class  UserService {
 
         Long userId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
 
-        String key="user:"+userId;
-        String cachUser=redisTemplate.opsForValue().get(key);
-        if(cachUser!=null){
-            return objectMapper.readValue(cachUser,UserResponse.class);
-        }
+
+
         User user = repository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         UserResponse userResponse=mapper.toDto(user);
-        try {
-            redisTemplate.opsForValue().set(
-                    key,
-                    objectMapper.writeValueAsString(userResponse),
-                    java.time.Duration.ofMinutes(30));
-        } catch (Exception e) {
-            redisTemplate.delete(key);
-        }
+
         return userResponse;
     }
     public PageResponse<UserResponse>getCustomer(int page,int size){
