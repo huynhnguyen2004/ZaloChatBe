@@ -28,10 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
 import java.util.Date;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -89,6 +86,7 @@ public class AuthenticationService {
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getId().toString())
+                .jwtID(UUID.randomUUID().toString())
                 .claim("rememberMe", isRememberMe)
                 .issueTime(new Date())
                 .expirationTime(
@@ -113,14 +111,18 @@ public class AuthenticationService {
     public void logout(String accessToken, String refreshToken) throws Exception {
         SignedJWT jwt = SignedJWT.parse(accessToken.substring(7));
 
-        if (!jwt.verify(new MACVerifier(jwtProperties.getSecret()))) {
+        SignedJWT jwtRefresh=SignedJWT.parse(refreshToken.substring(7));
+        if (!jwt.verify(new MACVerifier(jwtProperties.getSecret()))||!jwtRefresh.verify(new MACVerifier(jwtProperties.getSecret()))) {
             throw new AppException(ErrorCode.TOKEN_INVALID);
         }
 
         String jti = jwt.getJWTClaimsSet().getJWTID();
         Date exp = jwt.getJWTClaimsSet().getExpirationTime();
+        String jtiRe = jwtRefresh.getJWTClaimsSet().getJWTID();
+        Date exprE = jwtRefresh.getJWTClaimsSet().getExpirationTime();
 
         long ttl = Math.max((exp.getTime() - System.currentTimeMillis()) / 1000, 0);
+        long ttlRe = Math.max((exprE.getTime() - System.currentTimeMillis()) / 1000, 0);
 
         RefreshToken tokenEntity = refreshTokenRepository.findByToken(refreshToken)
                 .orElseThrow(() -> new AppException(ErrorCode.TOKEN_NOT_FOUND));
@@ -129,7 +131,7 @@ public class AuthenticationService {
             throw new AppException(ErrorCode.TOKEN_REVOKED);
         }
 
-        Long userId = tokenEntity.getUser().getId();
+        Long userId = Long.parseLong(jwt.getJWTClaimsSet().getSubject());
 
         User user = repository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -139,6 +141,15 @@ public class AuthenticationService {
         repository.save(user);
 
         refreshTokenRepository.revokeByToken(refreshToken);
+        redisTemplate.opsForValue().set(
+                "revokeToken:"+refreshToken,
+                "true",
+                ttlRe,
+                TimeUnit.SECONDS
+        );
+
+        redisTemplate.delete("refreshToken:"+user.getId());
+
 
         redisTemplate.opsForValue().set(
                 "blacklist:" + jti,
@@ -195,6 +206,13 @@ public class AuthenticationService {
 
         String accessToken = generateAccessToken(saved, request.getIsRememberMe());
         String refreshTokenJwt = generateRefreshToken(saved, refreshExpire, request.getIsRememberMe());
+        redisTemplate.opsForValue().set(
+                "refreshToken:"+user.getId(),
+                refreshTokenJwt,
+                refreshExpire/1000,
+                TimeUnit.SECONDS
+        );
+
         refreshToken.setToken(refreshTokenJwt);
         refreshTokenRepository.save(refreshToken);
         return ResultLogin.builder()
@@ -221,15 +239,29 @@ public class AuthenticationService {
             throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
 
+        Long userId=Long.parseLong(jwt.getJWTClaimsSet().getSubject());
+        long ttl = Math.max((expiry.getTime() - System.currentTimeMillis()) / 1000, 0);
+        String redisToken = redisTemplate.opsForValue().get("refreshToken:"+userId);
+
+        if (redisToken == null || !redisToken.equals(refreshToken)) {
+            throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
+        }
+
         RefreshToken refreshTokenEntity = refreshTokenRepository.findByToken(refreshToken)
                 .orElseThrow(() -> new AppException(ErrorCode.TOKEN_NOT_FOUND));
-
-        if (refreshTokenEntity.getRevoked()) {
+        if(redisTemplate.hasKey("revokeToken:"+refreshToken)||refreshTokenEntity.getRevoked()){
             throw new AppException(ErrorCode.TOKEN_REVOKED);
         }
+
         User user = refreshTokenEntity.getUser();
 
         refreshTokenEntity.setRevoked(true);
+        redisTemplate.opsForValue().set(
+                "revokeToken:"+refreshToken,
+                "true",
+                ttl,
+                TimeUnit.SECONDS
+        );
         refreshTokenRepository.save(refreshTokenEntity);
 
         Boolean rememberMe = (Boolean) jwt.getJWTClaimsSet().getClaim("rememberMe");
@@ -243,6 +275,11 @@ public class AuthenticationService {
 
         String newRefresh = generateRefreshToken(user, refreshExpire, rememberMe);
 
+        redisTemplate.opsForValue().set(
+                "refreshToken:"+userId,
+                newRefresh,
+                refreshExpire/1000,
+                TimeUnit.SECONDS);
         refreshTokenEntity.setToken(newRefresh);
         refreshTokenEntity.setExpiresAt(
                 new Date(System.currentTimeMillis() + refreshExpire)
