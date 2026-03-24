@@ -1,6 +1,8 @@
 package com.huynh.ZaloCloneBe.config;
 
 import com.huynh.ZaloCloneBe.entity.User;
+import com.huynh.ZaloCloneBe.exception.AppException;
+import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.SignedJWT;
@@ -23,8 +25,7 @@ import java.util.List;
 @Component
 public class JwtTokenFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private UserRepository userRepository;
+
     @Autowired
     private JwtProperties jwtProperties;
     @Autowired
@@ -53,26 +54,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         try {
             SignedJWT jwt = SignedJWT.parse(token);
             if (!jwt.verify(new MACVerifier(jwtProperties.getSecret()))) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("""
-                         {
-                                  "message": "TOKEN_INVALID"
-                                }
-                        """);
-                return;
+                throw new AppException(ErrorCode.TOKEN_INVALID);
             }
             Date expiry = jwt.getJWTClaimsSet().getExpirationTime();
 
             if (expiry.before(new Date())) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.getWriter().write("""
-                         {
-                                  "message": "TOKEN_EXPIRED"
-                                }
-                        """);
-
-                return;
+                throw new AppException(ErrorCode.TOKEN_EXPIRED);
             }
             Long userId = Long.parseLong(jwt.getJWTClaimsSet().getSubject());
             String role=jwt.getJWTClaimsSet().getStringClaim("role");
@@ -81,17 +68,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
 
             if (userId==null) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
+                throw new AppException(ErrorCode.UNAUTHORIZED);
+
             }
             if(redisTemplate.hasKey(key)){
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("""
-                         {
-                                  "message": "TOKEN_INVALID"
-                                }
-                        """);
-                return;
+                throw new AppException(ErrorCode.TOKEN_INVALID);
+
 
             }
 
@@ -103,14 +85,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("""
-                        {
-                            "message": "TOKEN_INVALID"
-                        }
-                    """);
-            return;
+            SecurityContextHolder.clearContext();
+            throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
         filterChain.doFilter(request, response);

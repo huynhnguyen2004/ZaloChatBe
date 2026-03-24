@@ -111,7 +111,7 @@ public class AuthenticationService {
     public void logout(String accessToken, String refreshToken) throws Exception {
         SignedJWT jwt = SignedJWT.parse(accessToken.substring(7));
 
-        SignedJWT jwtRefresh=SignedJWT.parse(refreshToken.substring(7));
+        SignedJWT jwtRefresh=SignedJWT.parse(refreshToken);
         if (!jwt.verify(new MACVerifier(jwtProperties.getSecret()))||!jwtRefresh.verify(new MACVerifier(jwtProperties.getSecret()))) {
             throw new AppException(ErrorCode.TOKEN_INVALID);
         }
@@ -243,7 +243,7 @@ public class AuthenticationService {
         long ttl = Math.max((expiry.getTime() - System.currentTimeMillis()) / 1000, 0);
         String redisToken = redisTemplate.opsForValue().get("refreshToken:"+userId);
 
-        if (redisToken == null || !redisToken.equals(refreshToken)) {
+        if (redisToken == null || !redisToken.trim().equals(refreshToken.trim())) {
             throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
         }
 
@@ -255,13 +255,14 @@ public class AuthenticationService {
 
         User user = refreshTokenEntity.getUser();
 
-        refreshTokenEntity.setRevoked(true);
+
         redisTemplate.opsForValue().set(
                 "revokeToken:"+refreshToken,
                 "true",
                 ttl,
                 TimeUnit.SECONDS
         );
+        refreshTokenEntity.setRevoked(true);
         refreshTokenRepository.save(refreshTokenEntity);
 
         Boolean rememberMe = (Boolean) jwt.getJWTClaimsSet().getClaim("rememberMe");
@@ -280,11 +281,14 @@ public class AuthenticationService {
                 newRefresh,
                 refreshExpire/1000,
                 TimeUnit.SECONDS);
-        refreshTokenEntity.setToken(newRefresh);
-        refreshTokenEntity.setExpiresAt(
-                new Date(System.currentTimeMillis() + refreshExpire)
-        );
-        refreshTokenEntity.setRevoked(false);
+        RefreshToken newToken = RefreshToken.builder()
+                .user(user)
+                .token(newRefresh)
+                .expiresAt(new Date(System.currentTimeMillis() + refreshExpire))
+                .revoked(false)
+                .build();
+
+        refreshTokenRepository.save(newToken);
 
         refreshTokenRepository.save(refreshTokenEntity);
 
