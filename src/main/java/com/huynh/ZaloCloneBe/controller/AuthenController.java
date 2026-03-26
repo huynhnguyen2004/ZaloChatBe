@@ -74,7 +74,7 @@ public class AuthenController {
                 .build();
     }
     @PostMapping("/register")
-    public ApiResponse<UserResponse>createUser(@Valid @RequestBody RegisterRequest request){
+    public ApiResponse<UserResponse>register(@Valid @RequestBody RegisterRequest request){
         return ApiResponse.<UserResponse>builder()
                 .status(200)
                 .message("Tạo user thành công")

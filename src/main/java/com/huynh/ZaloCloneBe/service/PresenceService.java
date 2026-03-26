@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+
 @Service
 public class PresenceService {
 
@@ -29,6 +31,7 @@ public class PresenceService {
     public void userOffline(Long userId) {
         User user = userRepository.findById(userId).orElseThrow();
         user.setOnline(false);
+        user.setLastOnline(new Date());
         userRepository.save(user);
         messagingTemplate.convertAndSend(
                 "/topic/presence",

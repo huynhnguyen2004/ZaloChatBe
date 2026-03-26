@@ -1,9 +1,8 @@
 package com.huynh.ZaloCloneBe.config;
 
-import com.huynh.ZaloCloneBe.entity.User;
-import com.huynh.ZaloCloneBe.exception.AppException;
+
 import com.huynh.ZaloCloneBe.exception.ErrorCode;
-import com.huynh.ZaloCloneBe.repository.UserRepository;
+
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.servlet.FilterChain;
@@ -25,16 +24,18 @@ import java.util.List;
 @Component
 public class JwtTokenFilter extends OncePerRequestFilter {
 
-
     @Autowired
     private JwtProperties jwtProperties;
+
     @Autowired
     private StringRedisTemplate redisTemplate;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
+
         String path = request.getRequestURI();
 
         if (path.startsWith("/api/auth")) {
@@ -53,42 +54,80 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         try {
             SignedJWT jwt = SignedJWT.parse(token);
+
+
             if (!jwt.verify(new MACVerifier(jwtProperties.getSecret()))) {
-                throw new AppException(ErrorCode.TOKEN_INVALID);
+                SecurityContextHolder.clearContext();
+                handleError(response, ErrorCode.TOKEN_INVALID);
+                return;
             }
+
             Date expiry = jwt.getJWTClaimsSet().getExpirationTime();
-
             if (expiry.before(new Date())) {
-                throw new AppException(ErrorCode.TOKEN_EXPIRED);
-            }
-            Long userId = Long.parseLong(jwt.getJWTClaimsSet().getSubject());
-            String role=jwt.getJWTClaimsSet().getStringClaim("role");
-            String jti=jwt.getJWTClaimsSet().getJWTID();
-            String key="blacklist:"+jti;
-
-
-            if (userId==null) {
-                throw new AppException(ErrorCode.UNAUTHORIZED);
-
-            }
-            if(redisTemplate.hasKey(key)){
-                throw new AppException(ErrorCode.TOKEN_INVALID);
-
-
+                SecurityContextHolder.clearContext();
+                handleError(response, ErrorCode.TOKEN_EXPIRED);
+                return;
             }
 
 
+            String subject = jwt.getJWTClaimsSet().getSubject();
+            if (subject == null) {
+                SecurityContextHolder.clearContext();
+                handleError(response, ErrorCode.UNAUTHORIZED);
+                return;
+            }
 
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    userId, null, List.of(new SimpleGrantedAuthority("ROLE_" + role))
-            );
+            Long userId = Long.parseLong(subject);
+
+
+            String role = jwt.getJWTClaimsSet().getStringClaim("role");
+            if (role == null) {
+                SecurityContextHolder.clearContext();
+                handleError(response, ErrorCode.UNAUTHORIZED);
+                return;
+            }
+
+
+            String jti = jwt.getJWTClaimsSet().getJWTID();
+            if (jti != null && Boolean.TRUE.equals(redisTemplate.hasKey("blacklist:" + jti))) {
+                SecurityContextHolder.clearContext();
+                handleError(response, ErrorCode.TOKEN_INVALID);
+                return;
+            }
+
+
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(
+                            userId,
+                            null,
+                            List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                    );
+
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         } catch (Exception e) {
+            e.printStackTrace();
             SecurityContextHolder.clearContext();
-            throw new AppException(ErrorCode.UNAUTHORIZED);
+            handleError(response, ErrorCode.UNAUTHORIZED);
+            return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void handleError(HttpServletResponse response, ErrorCode error) throws IOException {
+        response.setStatus(error.getStatus());
+        response.setContentType("application/json;charset=UTF-8");
+
+        String json = String.format("""
+                {
+                    "status":%s,
+                    "code": "%s",
+                    "message": "%s"
+                }
+                """,error.getStatus(), error.getCode(), error.getMessage());
+
+        response.getWriter().write(json);
+        response.getWriter().flush();
     }
 }
