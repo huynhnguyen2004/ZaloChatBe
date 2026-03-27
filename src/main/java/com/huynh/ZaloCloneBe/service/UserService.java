@@ -1,6 +1,7 @@
 package com.huynh.ZaloCloneBe.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.huynh.ZaloCloneBe.config.JwtProperties;
 import com.huynh.ZaloCloneBe.dto.request.UpdatePassword;
 import com.huynh.ZaloCloneBe.dto.request.UpdateRequest;
 
@@ -15,6 +16,8 @@ import com.huynh.ZaloCloneBe.mapper.UserMapper;
 import com.huynh.ZaloCloneBe.repository.FriendRepository;
 import com.huynh.ZaloCloneBe.repository.FriendRequestRepository;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
+import com.huynh.ZaloCloneBe.until.PhoneUntil;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +47,8 @@ public class  UserService {
     private FriendRequestRepository friendRequestRepository;
     @Autowired
     private StringRedisTemplate redisTemplate;
+    @Autowired
+    private JwtProperties jwtProperties;
     private ObjectMapper objectMapper=new ObjectMapper();
 
 
@@ -53,6 +58,13 @@ public class  UserService {
 
 
         SignedJWT signedJWT = SignedJWT.parse(jwt);
+        if(!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))){
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+        Date expiry = signedJWT.getJWTClaimsSet().getExpirationTime();
+        if (expiry.before(new Date())) {
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+        }
 
         Long userId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
 
@@ -83,26 +95,44 @@ public class  UserService {
                 .build();
 
     }
-    public List<SearchResponse>search(Long userId, String key){
-        repository.findById(userId).orElseThrow(()-> new AppException(ErrorCode.USER_NOT_FOUND));
-        List<User> lst=repository.search(key);
-
-        List<SearchResponse>searchResponseList=new ArrayList<>();
-        for(User u:lst){
-            boolean isFriend= friendRepository.existsFriend(userId,u.getId());
-             Long id=u.getId();
-             String firstname=u.getFirstname();
-             String phone=u.getPhone();
-            String avatarUrl=u.getAvatarUrl();
-            String lastname=u.getLastname();
-            boolean online=u.isOnline();
-             Date createdAt=u.getCreatedAt();
-            String role=u.getRole();
-            Boolean isfr=isFriend;
-            searchResponseList.add(new SearchResponse(id,firstname,phone,avatarUrl,lastname,online,createdAt,role,isfr));
+    public List<SearchResponse> search(String token, String key) throws Exception{
+        if(token==null||token.isBlank()){
+            throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
         }
+        String jwt=token.substring(7);
+        SignedJWT signedJwt=SignedJWT.parse(jwt);
+        if(!signedJwt.verify(new MACVerifier(jwtProperties.getSecret()))){
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+        Date expiry = signedJwt.getJWTClaimsSet().getExpirationTime();
+        if (expiry.before(new Date())) {
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+        }
+        Long userId=Long.parseLong(signedJwt.getJWTClaimsSet().getSubject());
+        String phone= PhoneUntil.formatPhone(key);
+        Optional<User> optionalUser = repository.findByPhone(phone);
 
-        return searchResponseList;
+        if (optionalUser.isEmpty()) {
+            return List.of();
+        }
+        User u = optionalUser.get();
+
+        if (u.getId().equals(userId)) {
+            return List.of();
+        }
+        boolean isFriend= friendRepository.existsFriend(userId,u.getId());
+
+        return List.of(
+                SearchResponse.builder()
+                .id(u.getId())
+                .firstname(u.getFirstname())
+                .lastname(u.getLastname())
+                .avatarUrl(u.getAvatarUrl())
+                .phone(u.getPhone())
+                .online(u.isOnline())
+                .isFriend(isFriend)
+                .build()
+                );
     }
     @Transactional
     public UserResponse updateAvatar(Long userId, String avatarUrl) {

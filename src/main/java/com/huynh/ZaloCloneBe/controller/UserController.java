@@ -34,13 +34,13 @@ public class UserController {
 
     @GetMapping("/search")
     public ApiResponse<List<SearchResponse>> search(
-            @RequestParam Long userId,
-            @RequestParam String key) {
+            @RequestHeader("Authorization") String token,
+            @RequestParam String key) throws Exception {
 
         return ApiResponse.<List<SearchResponse>>builder()
                 .status(200)
                 .message("Tìm kiếm thành công")
-                .result(service.search(userId, key))
+                .result(service.search(token, key))
                 .build();
     }
 

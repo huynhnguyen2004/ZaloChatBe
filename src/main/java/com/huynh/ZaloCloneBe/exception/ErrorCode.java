@@ -48,7 +48,8 @@ public enum ErrorCode {
     TOKEN_NOT_FOUND(404, "TOKEN_NOT_FOUND", "Không tìm thấy token"),
     TOKEN_REVOKED(401, "TOKEN_REVOKED", "Token đã bị thu hồi"),
 
-
+    //Search
+    SEARCH_INVALID(401,"SEARCH_INVALID","TÌm kiếm không hợp lệ"),
 
     // ================= OTP =================
     OTP_COOLDOWN(429, "OTP_COOLDOWN", "Vui lòng gửi lại OTP sau 60 giây"),

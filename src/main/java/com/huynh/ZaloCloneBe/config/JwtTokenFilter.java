@@ -55,7 +55,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         try {
             SignedJWT jwt = SignedJWT.parse(token);
 
-
             if (!jwt.verify(new MACVerifier(jwtProperties.getSecret()))) {
                 SecurityContextHolder.clearContext();
                 handleError(response, ErrorCode.TOKEN_INVALID);
@@ -106,7 +105,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         } catch (Exception e) {
-            e.printStackTrace();
             SecurityContextHolder.clearContext();
             handleError(response, ErrorCode.UNAUTHORIZED);
             return;

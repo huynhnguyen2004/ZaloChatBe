@@ -19,14 +19,6 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User,Long> {
     boolean existsByPhone(String phone);
     Optional<User>findByPhone(String phone);
-    @Query("""
-        SELECT u FROM User u
-        WHERE u.firstname LIKE CONCAT('%', :key, '%')
-           OR u.lastname LIKE CONCAT('%', :key, '%')
-           OR u.phone = :key
-       """)
-    List<User> search(@Param("key") String key);
-
 
     @Query("""
             select u from User u
