@@ -1,10 +1,8 @@
 package com.huynh.ZaloCloneBe.service;
 
+import com.huynh.ZaloCloneBe.config.JwtProperties;
 import com.huynh.ZaloCloneBe.dto.request.SendFriendRequest;
-import com.huynh.ZaloCloneBe.dto.response.AcceptedFriendResponse;
-import com.huynh.ZaloCloneBe.dto.response.FriendResponse;
-import com.huynh.ZaloCloneBe.dto.response.ListSendFriendResponse;
-import com.huynh.ZaloCloneBe.dto.response.SendFriendResponse;
+import com.huynh.ZaloCloneBe.dto.response.*;
 import com.huynh.ZaloCloneBe.entity.Friend;
 import com.huynh.ZaloCloneBe.entity.FriendRequest;
 import com.huynh.ZaloCloneBe.entity.StatusRequest;
@@ -15,8 +13,14 @@ import com.huynh.ZaloCloneBe.mapper.FriendRequestMapper;
 import com.huynh.ZaloCloneBe.repository.FriendRepository;
 import com.huynh.ZaloCloneBe.repository.FriendRequestRepository;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
+import com.nimbusds.jose.crypto.MACVerifier;
+import com.nimbusds.jwt.SignedJWT;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -36,14 +40,41 @@ public class FriendRequestService {
     private RealTimeService realTimeService;
     @Autowired
     private FriendRepository friendRepository;
+    @Autowired
+    private JwtProperties jwtProperties;
 
-    public List<ListSendFriendResponse> getAllSendFriend(Long id) {
-        List<FriendRequest> requests = repository.findByReceiverIdAndStatus(id, StatusRequest.PENDING);
-        List<ListSendFriendResponse> responseList=new ArrayList<>();
-        for(FriendRequest friendRequest:requests){
-            responseList.add(mapper.toDtoList(friendRequest));
+    public PageResponse<ListSendFriendResponse> getAllSendFriend(String token,int size,Long lastId) throws Exception {
+        if(token==null||token.isBlank()){
+            throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
         }
-        return responseList;
+        String jwt=token.substring(7);
+        SignedJWT signedJWT=SignedJWT.parse(jwt);
+        if(!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))){
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+        Date expire=signedJWT.getJWTClaimsSet().getExpirationTime();
+        if(expire.before(new Date())){
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+        }
+        Long userId=Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
+        if(userId==null){
+            throw new AppException(ErrorCode.USER_NOT_FOUND);
+        }
+        Pageable pageable= PageRequest.of(0,size);
+        Page<FriendRequest> requests = repository.findByReceiverIdAndStatus(userId, StatusRequest.PENDING,lastId,pageable);
+        List<ListSendFriendResponse> responses=new ArrayList<>();
+        for(FriendRequest friendRequest:requests.getContent()){
+            responses.add(mapper.toDtoList(friendRequest));
+        }
+        return PageResponse.<ListSendFriendResponse>builder()
+                .content(responses)
+                .page(requests.getNumber())
+                .size(requests.getSize())
+                .totalElements(requests.getTotalElements())
+                .totalPages(requests.getTotalPages())
+                .first(lastId==null)
+                .last(responses.size()<size)
+                .build();
     }
 
     public SendFriendResponse sendRequest(SendFriendRequest request) {

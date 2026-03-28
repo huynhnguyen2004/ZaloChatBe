@@ -1,17 +1,14 @@
 package com.huynh.ZaloCloneBe.controller;
 
-import com.huynh.ZaloCloneBe.dto.request.AcceptedFriendRequest;
+
 import com.huynh.ZaloCloneBe.dto.request.SendFriendRequest;
-import com.huynh.ZaloCloneBe.dto.response.AcceptedFriendResponse;
-import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
-import com.huynh.ZaloCloneBe.dto.response.ListSendFriendResponse;
-import com.huynh.ZaloCloneBe.dto.response.SendFriendResponse;
+import com.huynh.ZaloCloneBe.dto.response.*;
 import com.huynh.ZaloCloneBe.service.FriendRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/friendrequest")
@@ -41,11 +38,16 @@ public class FriendRequestController {
     }
 
     @GetMapping
-    public ApiResponse<List<ListSendFriendResponse>>getAllFriendRequest(@RequestParam("id") Long id){
-        return ApiResponse.<List<ListSendFriendResponse>>builder()
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ApiResponse<PageResponse<ListSendFriendResponse>>getAllFriendRequest(@RequestHeader("Authorization") String token,
+                                                                                @RequestParam(defaultValue = "10") int size,
+                                                                                @RequestParam(required = false)Long lastId
+    )
+    throws Exception{
+        return ApiResponse.<PageResponse<ListSendFriendResponse>>builder()
                 .status(200)
                 .message("Lay danh sach gui loi moi thanh cong")
-                .result(service.getAllSendFriend(id))
+                .result(service.getAllSendFriend(token,size,lastId))
                 .build();
     }
     @PutMapping("/reject")
