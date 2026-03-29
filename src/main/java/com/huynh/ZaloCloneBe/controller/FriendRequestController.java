@@ -1,7 +1,6 @@
 package com.huynh.ZaloCloneBe.controller;
 
 
-import com.huynh.ZaloCloneBe.dto.request.SendFriendRequest;
 import com.huynh.ZaloCloneBe.dto.response.*;
 import com.huynh.ZaloCloneBe.service.FriendRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,22 +17,24 @@ public class FriendRequestController {
     private FriendRequestService service;
 
     @PostMapping("/send")
-    public ApiResponse<SendFriendResponse> sendRequest(@RequestBody  SendFriendRequest request) {
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ApiResponse<SendFriendResponse> sendRequest(@RequestHeader("Authorization") String token,@RequestParam Long userId) throws Exception{
         return ApiResponse.<SendFriendResponse>builder()
                 .status(200)
                 .message("gui loi moi thanh cong")
-                .result(service.sendRequest(request))
+                .result(service.sendRequest(token,userId))
                 .build();
     }
     @PutMapping("/accept")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ApiResponse<AcceptedFriendResponse> acceptFriend(
-            @RequestParam Long meId,
-            @RequestParam Long otherId
-    ) {
+            @RequestHeader("Authorization") String token,
+            @RequestParam Long userId
+    ) throws Exception {
         return ApiResponse.<AcceptedFriendResponse>builder()
                 .status(200)
                 .message("Chấp nhận lời mời kết bạn")
-                .result(service.acceptFriend(meId, otherId))
+                .result(service.acceptFriend(token, userId))
                 .build();
     }
 
@@ -51,8 +52,9 @@ public class FriendRequestController {
                 .build();
     }
     @PutMapping("/reject")
-    public ApiResponse<Void> rejectRequest(@RequestParam Long meId,@RequestParam Long userId) {
-        service.rejectRequest(meId,userId);
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ApiResponse<Void> rejectRequest(@RequestHeader("Authorization") String token,@RequestParam Long userId) throws Exception {
+        service.rejectRequest(token,userId);
         return ApiResponse.<Void>builder()
                 .status(200)
                 .message("reject thanh cong")
@@ -61,11 +63,12 @@ public class FriendRequestController {
 
 
     @PutMapping("/cancele")
-    public ApiResponse<Void> canceleRequest(@RequestParam Long meId,@RequestParam Long userId) {
-        service.cancelRequest(meId,userId);
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ApiResponse<Void> canceleRequest(@RequestHeader("Authorization") String token,@RequestParam Long userId) throws Exception{
+        service.cancelRequest(token,userId);
         return ApiResponse.<Void>builder()
                 .status(200)
-                .message("reject thanh cong")
+                .message("cancele thanh cong")
                 .build();
 
     }

@@ -1,7 +1,6 @@
 package com.huynh.ZaloCloneBe.service;
 
 import com.huynh.ZaloCloneBe.config.JwtProperties;
-import com.huynh.ZaloCloneBe.dto.request.SendFriendRequest;
 import com.huynh.ZaloCloneBe.dto.response.*;
 import com.huynh.ZaloCloneBe.entity.Friend;
 import com.huynh.ZaloCloneBe.entity.FriendRequest;
@@ -20,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -77,44 +75,67 @@ public class FriendRequestService {
                 .build();
     }
 
-    public SendFriendResponse sendRequest(SendFriendRequest request) {
+    public SendFriendResponse sendRequest(String token,Long receiverId) throws Exception {
 
-        if (friendRepository.existsFriend(request.getSenderId(), request.getReceiverId())) {
+        if(token==null||token.isBlank()){
+            throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
+        }
+        String jwt=token.substring(7);
+        SignedJWT signedJWT=SignedJWT.parse(jwt);
+        if(!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))){
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+        Date expire=signedJWT.getJWTClaimsSet().getExpirationTime();
+        if(expire.before(new Date())){
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+        }
+        Long senderId=Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
+        if(senderId.equals(receiverId)){
+            throw new AppException(ErrorCode.REQUEST_INVALID);
+        }
+        if (friendRepository.existsFriend(senderId, receiverId)) {
             throw new AppException(ErrorCode.FRIEND_ALREADY);
         }
-        if (repository.existsBySenderIdAndReceiverIdAndStatus(request.getSenderId(), request.getReceiverId(),StatusRequest.PENDING)) {
+        if (repository.existsBySenderIdAndReceiverIdAndStatus(senderId, receiverId,StatusRequest.PENDING)) {
             throw new AppException(ErrorCode.REQUEST_ALREADY_SENT);
         }
-        if (repository.existsBySenderIdAndReceiverIdAndStatus(request.getReceiverId(), request.getSenderId(),StatusRequest.PENDING)) {
+        if (repository.existsBySenderIdAndReceiverIdAndStatus(senderId, receiverId,StatusRequest.PENDING)) {
             throw new AppException(ErrorCode.REQUEST_ALREADY_SENT);
-        }
-        if (request.getSenderId().equals(request.getReceiverId())) {
-            throw new AppException(ErrorCode.REQUEST_FRIEND_INVALID);
         }
 
-        User sender = userRepository.findById(request.getSenderId())
+
+        User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new AppException(ErrorCode.SEND_NOT_FOUND));
-        User receiver = userRepository.findById(request.getReceiverId())
+        User receiver = userRepository.findById(receiverId)
                 .orElseThrow(() -> new AppException(ErrorCode.RECEIVE_NOT_FOUND));
 
-        FriendRequest fr = mapper.toEntity(request);
-        fr.setCreatedAt(new Date());
-        fr.setStatus(StatusRequest.PENDING);
+        FriendRequest fr =new FriendRequest();
         fr.setSender(sender);
         fr.setReceiver(receiver);
-
+        fr.setStatus(StatusRequest.PENDING);
+        fr.setCreatedAt(new Date());
         FriendRequest saved = repository.save(fr);
-
         SendFriendResponse response = mapper.toDto(saved);
-
-
         realTimeService.sendFriendRequestRealtime(receiver.getId(), response);
 
         return response;
     }
 
     @Transactional
-    public AcceptedFriendResponse acceptFriend(Long meId, Long otherId) {
+    public AcceptedFriendResponse acceptFriend(String token, Long otherId) throws Exception {
+        if(token==null||token.isBlank()){
+            throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
+        }
+        String jwt=token.substring(7);
+        SignedJWT signedJWT=SignedJWT.parse(jwt);
+        if(!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))){
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+        Date expire=signedJWT.getJWTClaimsSet().getExpirationTime();
+        if(expire.before(new Date())){
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+        }
+        Long meId=Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
         FriendRequest fr = repository
                 .findBySenderIdAndReceiverIdAndStatus(
                         otherId,
@@ -174,7 +195,21 @@ public class FriendRequestService {
                 .build();
     }
 
-    public void cancelRequest(Long meId, Long otherId) {
+    @Transactional
+    public void cancelRequest(String token, Long otherId) throws Exception{
+        if(token==null||token.isBlank()){
+            throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
+        }
+        String jwt=token.substring(7);
+        SignedJWT signedJWT=SignedJWT.parse(jwt);
+        if(!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))){
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+        Date expire=signedJWT.getJWTClaimsSet().getExpirationTime();
+        if(expire.before(new Date())){
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+        }
+        Long meId=Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
 
         FriendRequest request = repository
                 .findBySenderIdAndReceiverIdAndStatus(
@@ -190,7 +225,21 @@ public class FriendRequestService {
         repository.save(request);
     }
 
-    public void rejectRequest(Long meId, Long otherId) {
+    @Transactional
+    public void rejectRequest(String token, Long otherId) throws Exception {
+        if(token==null||token.isBlank()){
+            throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
+        }
+        String jwt=token.substring(7);
+        SignedJWT signedJWT=SignedJWT.parse(jwt);
+        if(!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))){
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+        Date expire=signedJWT.getJWTClaimsSet().getExpirationTime();
+        if(expire.before(new Date())){
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+        }
+        Long meId=Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
 
         FriendRequest request = repository
                 .findBySenderIdAndReceiverIdAndStatus(

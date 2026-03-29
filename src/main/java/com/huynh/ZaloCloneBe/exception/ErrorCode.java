@@ -18,7 +18,6 @@ public enum ErrorCode {
     PASSWORD_SAME_AS_OLD(400, "PASSWORD_SAME_AS_OLD", "Mật khẩu phải khác mật khẩu hiện tại"),
 
     // ================= FRIEND =================
-    REQUEST_FRIEND_INVALID(400, "REQUEST_FRIEND_INVALID", "Không thể gửi lời mời chính mình"),
     REQUEST_NOT_FOUND(404, "REQUEST_NOT_FOUND", "Không tìm thấy lời mời"),
     REQUEST_ALREADY_ACCEPTED(400, "REQUEST_ALREADY_ACCEPTED", "Lời mời đã được chấp nhận"),
     REQUEST_CANNOT_CANCEL(400, "REQUEST_CANNOT_CANCEL", "Không thể hủy lời mời"),
@@ -34,7 +33,7 @@ public enum ErrorCode {
     REQUEST_ALREADY_SENT(400, "REQUEST_ALREADY_SENT", "Đã gửi lời mời rồi"),
     SEND_NOT_FOUND(404, "SEND_NOT_FOUND", "Không tìm thấy người gửi"),
     RECEIVE_NOT_FOUND(404, "RECEIVE_NOT_FOUND", "Không tìm thấy người nhận"),
-
+    REQUEST_INVALID(401,"REQUEST_INVALID","Không thể gửi chính mình"),
     // ================= FILE =================
     INVALID_IMAGE_FORMAT(400, "INVALID_IMAGE_FORMAT", "Chỉ chấp nhận jpg, png"),
 
