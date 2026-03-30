@@ -2,15 +2,14 @@ package com.huynh.ZaloCloneBe.service;
 
 import com.huynh.ZaloCloneBe.config.JwtProperties;
 import com.huynh.ZaloCloneBe.dto.response.*;
-import com.huynh.ZaloCloneBe.entity.Friend;
-import com.huynh.ZaloCloneBe.entity.FriendRequest;
-import com.huynh.ZaloCloneBe.entity.StatusRequest;
-import com.huynh.ZaloCloneBe.entity.User;
+import com.huynh.ZaloCloneBe.entity.*;
 import com.huynh.ZaloCloneBe.exception.AppException;
 import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import com.huynh.ZaloCloneBe.mapper.FriendRequestMapper;
+import com.huynh.ZaloCloneBe.mapper.NotificationMapper;
 import com.huynh.ZaloCloneBe.repository.FriendRepository;
 import com.huynh.ZaloCloneBe.repository.FriendRequestRepository;
+import com.huynh.ZaloCloneBe.repository.NotificationRepository;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.SignedJWT;
@@ -35,11 +34,15 @@ public class FriendRequestService {
     @Autowired
     private FriendRequestMapper mapper;
     @Autowired
+    private NotificationMapper notificationMapper;
+    @Autowired
     private RealTimeService realTimeService;
     @Autowired
     private FriendRepository friendRepository;
     @Autowired
     private JwtProperties jwtProperties;
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     public PageResponse<ListSendFriendResponse> getAllSendFriend(String token,int size,Long lastId) throws Exception {
         if(token==null||token.isBlank()){
@@ -55,9 +58,6 @@ public class FriendRequestService {
             throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
         Long userId=Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
-        if(userId==null){
-            throw new AppException(ErrorCode.USER_NOT_FOUND);
-        }
         Pageable pageable= PageRequest.of(0,size);
         Page<FriendRequest> requests = repository.findByReceiverIdAndStatus(userId, StatusRequest.PENDING,lastId,pageable);
         List<ListSendFriendResponse> responses=new ArrayList<>();
@@ -75,6 +75,7 @@ public class FriendRequestService {
                 .build();
     }
 
+    @Transactional
     public SendFriendResponse sendRequest(String token,Long receiverId) throws Exception {
 
         if(token==null||token.isBlank()){
@@ -116,8 +117,15 @@ public class FriendRequestService {
         fr.setCreatedAt(new Date());
         FriendRequest saved = repository.save(fr);
         SendFriendResponse response = mapper.toDto(saved);
-        realTimeService.sendFriendRequestRealtime(receiver.getId(), response);
-
+        Notifications notifications=new Notifications();
+        notifications.setSender(sender);
+        notifications.setReceiver(receiver);
+        notifications.setType(NotificationType.SEND_REQUEST);
+        notifications.setTargetId(saved.getId());
+        notifications.setCreatedAt(new Date());
+        Notifications saved1=notificationRepository.save(notifications);
+        NotificationResponse notificationResponse=notificationMapper.toDto(saved1);
+        realTimeService.sendNotification(receiverId,notificationResponse);
         return response;
     }
 
@@ -181,10 +189,10 @@ public class FriendRequestService {
                 .avatarUrl(sender.getAvatarUrl())
                 .online(sender.isOnline())
                 .build();
-        realTimeService.sendAcceptRealtime(sender.getId(), resForSender);
+
         realTimeService.sendFriendUpdateRealtime(sender.getId(), resForSender);
 
-        realTimeService.sendAcceptRealtime(receiver.getId(), resForReceiver);
+
         realTimeService.sendFriendUpdateRealtime(receiver.getId(), resForReceiver);
 
         return AcceptedFriendResponse.builder()

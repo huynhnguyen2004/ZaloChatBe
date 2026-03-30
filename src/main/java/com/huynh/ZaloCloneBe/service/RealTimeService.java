@@ -12,13 +12,6 @@ public class RealTimeService {
     @Autowired
     private SimpMessagingTemplate messaging;
 
-    public void sendFriendRequestRealtime(Long receiverId, Object data) {
-        messaging.convertAndSend("/topic/friend-request/" + receiverId, data);
-    }
-
-    public void sendAcceptRealtime(Long senderId, Object data) {
-        messaging.convertAndSend("/topic/friend-accept/" + senderId, data);
-    }
 
     public void sendFriendUpdateRealtime(Long userId, Object data) {
         messaging.convertAndSend("/topic/friend-list/" + userId, data);
@@ -30,6 +23,9 @@ public class RealTimeService {
 
     public void sendMessageToSender(Long senderId, Object data) {
         messaging.convertAndSend("/topic/chat-self/" + senderId, data);
+    }
+    public void sendNotification(Long receiverId,Object data){
+        messaging.convertAndSend("/topic/notification/"+receiverId,data);
     }
 
     @Transactional
