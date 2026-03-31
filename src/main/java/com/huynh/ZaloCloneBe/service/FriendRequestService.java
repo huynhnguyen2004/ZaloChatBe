@@ -122,6 +122,7 @@ public class FriendRequestService {
         notifications.setReceiver(receiver);
         notifications.setType(NotificationType.SEND_REQUEST);
         notifications.setTargetId(saved.getId());
+        notifications.setIsRead(false);
         notifications.setCreatedAt(new Date());
         Notifications saved1=notificationRepository.save(notifications);
         NotificationResponse notificationResponse=notificationMapper.toDto(saved1);

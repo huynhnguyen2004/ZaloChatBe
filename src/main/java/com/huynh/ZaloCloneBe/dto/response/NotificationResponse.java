@@ -20,5 +20,6 @@ public class NotificationResponse {
     private String receiverLastName;
     private String type;
     private Long targetId;
+    private Boolean isRead;
     private Date createdAt;
 }

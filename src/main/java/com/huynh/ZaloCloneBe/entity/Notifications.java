@@ -9,7 +9,11 @@ import java.util.Date;
 
 
 @Entity
-@Table(name = "notifications")
+@Table(name = "notifications",
+        indexes = {
+        @Index(name = "idx_notification",columnList = "sender_id,receiver_id,type,createdAt")
+}
+)
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -26,5 +30,6 @@ public class Notifications {
     @Enumerated(EnumType.STRING)
     private NotificationType type;
     private Long targetId;
+    private Boolean isRead;
     private Date createdAt;
 }

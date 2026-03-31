@@ -17,6 +17,7 @@ public interface NotificationMapper {
     @Mapping(target = "receiverLastName",source = "receiver.lastname")
     @Mapping(target = "type",source = "type")
     @Mapping(target = "targetId",source = "targetId")
+    @Mapping(target = "isRead",source = "isRead")
     @Mapping(target = "createdAt",source = "createdAt")
     NotificationResponse toDto(Notifications notifications);
 }
