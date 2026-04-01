@@ -181,7 +181,6 @@ public class FriendRequestService {
                 .avatarUrl(receiver.getAvatarUrl())
                 .online(receiver.isOnline())
                 .build();
-
         FriendResponse resForReceiver = FriendResponse.builder()
                 .id(friend.getId())
                 .friendId(sender.getId())
@@ -191,9 +190,17 @@ public class FriendRequestService {
                 .online(sender.isOnline())
                 .build();
 
+        Notifications notifications=new Notifications();
+        notifications.setSender(receiver);
+        notifications.setReceiver(sender);
+        notifications.setType(NotificationType.ACCEPT_REQUEST);
+        notifications.setTargetId(fr.getId());
+        notifications.setCreatedAt(new Date());
+        Notifications saved= notificationRepository.save(notifications);
+        NotificationResponse notificationResponse=notificationMapper.toDto(saved);
+        realTimeService.sendNotification(saved.getSender().getId(),notificationResponse);
+        realTimeService.sendNotification(saved.getReceiver().getId(),notificationResponse);
         realTimeService.sendFriendUpdateRealtime(sender.getId(), resForSender);
-
-
         realTimeService.sendFriendUpdateRealtime(receiver.getId(), resForReceiver);
 
         return AcceptedFriendResponse.builder()

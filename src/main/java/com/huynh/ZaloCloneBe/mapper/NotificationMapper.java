@@ -15,6 +15,7 @@ public interface NotificationMapper {
     @Mapping(target = "receiverId",source = "receiver.id")
     @Mapping(target = "receiverFirstName",source = "receiver.firstname")
     @Mapping(target = "receiverLastName",source = "receiver.lastname")
+    @Mapping(target = "receiverPhone",source = "receiver.phone")
     @Mapping(target = "type",source = "type")
     @Mapping(target = "targetId",source = "targetId")
     @Mapping(target = "isRead",source = "isRead")

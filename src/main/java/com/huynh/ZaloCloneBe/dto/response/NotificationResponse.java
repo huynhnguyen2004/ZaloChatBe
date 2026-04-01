@@ -18,6 +18,7 @@ public class NotificationResponse {
     private Long receiverId;
     private String receiverFirstName;
     private String receiverLastName;
+    private String receiverPhone;
     private String type;
     private Long targetId;
     private Boolean isRead;
