@@ -22,9 +22,10 @@ public class PresenceService {
         User user = userRepository.findById(userId).orElseThrow();
         user.setOnline(true);
         userRepository.save(user);
+        PresenceResponse response = new PresenceResponse(userId, true);
         messagingTemplate.convertAndSend(
-                "/topic/presence",
-                new PresenceResponse(userId, true)
+                "/topic/presence", response
+
         );
     }
 
@@ -33,9 +34,9 @@ public class PresenceService {
         user.setOnline(false);
         user.setLastOnline(new Date());
         userRepository.save(user);
+        PresenceResponse response = new PresenceResponse(userId, false);
         messagingTemplate.convertAndSend(
-                "/topic/presence",
-                new PresenceResponse(userId, false)
+                "/topic/presence", response
         );
     }
 }

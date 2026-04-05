@@ -53,7 +53,7 @@ public class SmsService {
 
 
 
-    public void sendOtp(SendOtpRequest request) {
+    public void sendOtp(SendOtpRequest request) throws Exception {
 
         String formatPhone = PhoneUntil.formatPhone(request.getPhone());
 
@@ -95,7 +95,7 @@ public class SmsService {
                 Duration.ofSeconds(50)
         );
 
-        // sendSms(formatPhone, "Your OTP: " + otp);
+//         sendSms(formatPhone, "Your OTP: " + otp);
 
         System.out.println("Your OTP: " + otp);
     }
