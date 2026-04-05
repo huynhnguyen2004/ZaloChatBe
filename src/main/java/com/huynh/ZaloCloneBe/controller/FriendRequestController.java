@@ -40,12 +40,12 @@ public class FriendRequestController {
 
     @GetMapping
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ApiResponse<PageResponse<ListSendFriendResponse>>getAllFriendRequest(@RequestHeader("Authorization") String token,
+    public ApiResponse<PageResponse<SendFriendResponse>>getAllFriendRequest(@RequestHeader("Authorization") String token,
                                                                                 @RequestParam(defaultValue = "10") int size,
                                                                                 @RequestParam(required = false)Long lastId
     )
     throws Exception{
-        return ApiResponse.<PageResponse<ListSendFriendResponse>>builder()
+        return ApiResponse.<PageResponse<SendFriendResponse>>builder()
                 .status(200)
                 .message("Lay danh sach gui loi moi thanh cong")
                 .result(service.getAllSendFriend(token,size,lastId))

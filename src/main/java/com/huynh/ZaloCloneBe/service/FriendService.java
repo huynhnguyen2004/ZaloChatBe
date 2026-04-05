@@ -32,7 +32,7 @@ public class FriendService {
                     return FriendResponse.builder()
                             .id(f.getId())
                             .friendId(friend.getId())
-                            .friendName(friend.getLastname() + " " + friend.getFirstname())
+                            .friendName(friend.getFirstname()+" "+friend.getLastname() )
                             .online(friend.isOnline())
                             .avatarUrl(friend.getAvatarUrl())
                             .phone(friend.getPhone())

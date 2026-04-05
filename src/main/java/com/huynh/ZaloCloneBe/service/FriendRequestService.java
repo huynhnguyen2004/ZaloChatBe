@@ -44,63 +44,63 @@ public class FriendRequestService {
     @Autowired
     private NotificationRepository notificationRepository;
 
-    public PageResponse<ListSendFriendResponse> getAllSendFriend(String token,int size,Long lastId) throws Exception {
-        if(token==null||token.isBlank()){
+    public PageResponse<SendFriendResponse> getAllSendFriend(String token, int size, Long lastId) throws Exception {
+        if (token == null || token.isBlank()) {
             throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
         }
-        String jwt=token.substring(7);
-        SignedJWT signedJWT=SignedJWT.parse(jwt);
-        if(!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))){
+        String jwt = token.substring(7);
+        SignedJWT signedJWT = SignedJWT.parse(jwt);
+        if (!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))) {
             throw new AppException(ErrorCode.TOKEN_INVALID);
         }
-        Date expire=signedJWT.getJWTClaimsSet().getExpirationTime();
-        if(expire.before(new Date())){
+        Date expire = signedJWT.getJWTClaimsSet().getExpirationTime();
+        if (expire.before(new Date())) {
             throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
-        Long userId=Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
-        Pageable pageable= PageRequest.of(0,size);
-        Page<FriendRequest> requests = repository.findByReceiverIdAndStatus(userId, StatusRequest.PENDING,lastId,pageable);
-        List<ListSendFriendResponse> responses=new ArrayList<>();
-        for(FriendRequest friendRequest:requests.getContent()){
-            responses.add(mapper.toDtoList(friendRequest));
+        Long userId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
+        Pageable pageable = PageRequest.of(0, size);
+        Page<FriendRequest> requests = repository.findByReceiverIdAndStatus(userId, StatusRequest.PENDING, lastId, pageable);
+        List<SendFriendResponse> responses = new ArrayList<>();
+        for (FriendRequest friendRequest : requests.getContent()) {
+            responses.add(mapper.toDto(friendRequest));
         }
-        return PageResponse.<ListSendFriendResponse>builder()
+        return PageResponse.<SendFriendResponse>builder()
                 .content(responses)
                 .page(requests.getNumber())
                 .size(requests.getSize())
                 .totalElements(requests.getTotalElements())
                 .totalPages(requests.getTotalPages())
-                .first(lastId==null)
-                .last(responses.size()<size)
+                .first(lastId == null)
+                .last(responses.size() < size)
                 .build();
     }
 
     @Transactional
-    public SendFriendResponse sendRequest(String token,Long receiverId) throws Exception {
+    public SendFriendResponse sendRequest(String token, Long receiverId) throws Exception {
 
-        if(token==null||token.isBlank()){
+        if (token == null || token.isBlank()) {
             throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
         }
-        String jwt=token.substring(7);
-        SignedJWT signedJWT=SignedJWT.parse(jwt);
-        if(!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))){
+        String jwt = token.substring(7);
+        SignedJWT signedJWT = SignedJWT.parse(jwt);
+        if (!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))) {
             throw new AppException(ErrorCode.TOKEN_INVALID);
         }
-        Date expire=signedJWT.getJWTClaimsSet().getExpirationTime();
-        if(expire.before(new Date())){
+        Date expire = signedJWT.getJWTClaimsSet().getExpirationTime();
+        if (expire.before(new Date())) {
             throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
-        Long senderId=Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
-        if(senderId.equals(receiverId)){
+        Long senderId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
+        if (senderId.equals(receiverId)) {
             throw new AppException(ErrorCode.REQUEST_INVALID);
         }
         if (friendRepository.existsFriend(senderId, receiverId)) {
             throw new AppException(ErrorCode.FRIEND_ALREADY);
         }
-        if (repository.existsBySenderIdAndReceiverIdAndStatus(senderId, receiverId,StatusRequest.PENDING)) {
+        if (repository.existsBySenderIdAndReceiverIdAndStatus(senderId, receiverId, StatusRequest.PENDING)) {
             throw new AppException(ErrorCode.REQUEST_ALREADY_SENT);
         }
-        if (repository.existsBySenderIdAndReceiverIdAndStatus(senderId, receiverId,StatusRequest.PENDING)) {
+        if (repository.existsBySenderIdAndReceiverIdAndStatus(senderId, receiverId, StatusRequest.PENDING)) {
             throw new AppException(ErrorCode.REQUEST_ALREADY_SENT);
         }
 
@@ -110,41 +110,41 @@ public class FriendRequestService {
         User receiver = userRepository.findById(receiverId)
                 .orElseThrow(() -> new AppException(ErrorCode.RECEIVE_NOT_FOUND));
 
-        FriendRequest fr =new FriendRequest();
+        FriendRequest fr = new FriendRequest();
         fr.setSender(sender);
         fr.setReceiver(receiver);
         fr.setStatus(StatusRequest.PENDING);
         fr.setCreatedAt(new Date());
         FriendRequest saved = repository.save(fr);
         SendFriendResponse response = mapper.toDto(saved);
-        Notifications notifications=new Notifications();
+        Notifications notifications = new Notifications();
         notifications.setSender(sender);
         notifications.setReceiver(receiver);
         notifications.setType(NotificationType.SEND_REQUEST);
         notifications.setTargetId(saved.getId());
         notifications.setIsRead(false);
         notifications.setCreatedAt(new Date());
-        Notifications saved1=notificationRepository.save(notifications);
-        NotificationResponse notificationResponse=notificationMapper.toDto(saved1);
-        realTimeService.sendNotification(receiverId,notificationResponse);
+        Notifications saved1 = notificationRepository.save(notifications);
+        NotificationResponse notificationResponse = notificationMapper.toDto(saved1);
+        realTimeService.sendNotification(receiverId, notificationResponse);
         return response;
     }
 
     @Transactional
     public AcceptedFriendResponse acceptFriend(String token, Long otherId) throws Exception {
-        if(token==null||token.isBlank()){
+        if (token == null || token.isBlank()) {
             throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
         }
-        String jwt=token.substring(7);
-        SignedJWT signedJWT=SignedJWT.parse(jwt);
-        if(!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))){
+        String jwt = token.substring(7);
+        SignedJWT signedJWT = SignedJWT.parse(jwt);
+        if (!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))) {
             throw new AppException(ErrorCode.TOKEN_INVALID);
         }
-        Date expire=signedJWT.getJWTClaimsSet().getExpirationTime();
-        if(expire.before(new Date())){
+        Date expire = signedJWT.getJWTClaimsSet().getExpirationTime();
+        if (expire.before(new Date())) {
             throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
-        Long meId=Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
+        Long meId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
         FriendRequest fr = repository
                 .findBySenderIdAndReceiverIdAndStatus(
                         otherId,
@@ -176,7 +176,7 @@ public class FriendRequestService {
         FriendResponse resForSender = FriendResponse.builder()
                 .id(friend.getId())
                 .friendId(receiver.getId())
-                .friendName(receiver.getLastname())
+                .friendName(receiver.getFirstname()+" "+receiver.getLastname())
                 .phone(receiver.getPhone())
                 .avatarUrl(receiver.getAvatarUrl())
                 .online(receiver.isOnline())
@@ -184,22 +184,22 @@ public class FriendRequestService {
         FriendResponse resForReceiver = FriendResponse.builder()
                 .id(friend.getId())
                 .friendId(sender.getId())
-                .friendName(sender.getLastname())
+                .friendName(sender.getFirstname()+" "+sender.getLastname())
                 .phone(sender.getPhone())
                 .avatarUrl(sender.getAvatarUrl())
                 .online(sender.isOnline())
                 .build();
 
-        Notifications notifications=new Notifications();
+        Notifications notifications = new Notifications();
         notifications.setSender(receiver);
         notifications.setReceiver(sender);
         notifications.setType(NotificationType.ACCEPT_REQUEST);
         notifications.setTargetId(fr.getId());
         notifications.setCreatedAt(new Date());
-        Notifications saved= notificationRepository.save(notifications);
-        NotificationResponse notificationResponse=notificationMapper.toDto(saved);
-        realTimeService.sendNotification(saved.getSender().getId(),notificationResponse);
-        realTimeService.sendNotification(saved.getReceiver().getId(),notificationResponse);
+        Notifications saved = notificationRepository.save(notifications);
+        NotificationResponse notificationResponse = notificationMapper.toDto(saved);
+        realTimeService.sendNotification(saved.getSender().getId(), notificationResponse);
+        realTimeService.sendNotification(saved.getReceiver().getId(), notificationResponse);
         realTimeService.sendFriendUpdateRealtime(sender.getId(), resForSender);
         realTimeService.sendFriendUpdateRealtime(receiver.getId(), resForReceiver);
 
@@ -212,20 +212,20 @@ public class FriendRequestService {
     }
 
     @Transactional
-    public void cancelRequest(String token, Long otherId) throws Exception{
-        if(token==null||token.isBlank()){
+    public void cancelRequest(String token, Long otherId) throws Exception {
+        if (token == null || token.isBlank()) {
             throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
         }
-        String jwt=token.substring(7);
-        SignedJWT signedJWT=SignedJWT.parse(jwt);
-        if(!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))){
+        String jwt = token.substring(7);
+        SignedJWT signedJWT = SignedJWT.parse(jwt);
+        if (!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))) {
             throw new AppException(ErrorCode.TOKEN_INVALID);
         }
-        Date expire=signedJWT.getJWTClaimsSet().getExpirationTime();
-        if(expire.before(new Date())){
+        Date expire = signedJWT.getJWTClaimsSet().getExpirationTime();
+        if (expire.before(new Date())) {
             throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
-        Long meId=Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
+        Long meId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
 
         FriendRequest request = repository
                 .findBySenderIdAndReceiverIdAndStatus(
@@ -238,24 +238,26 @@ public class FriendRequestService {
                 );
 
         request.setStatus(StatusRequest.CANCELED);
-        repository.save(request);
+        FriendRequest saved = repository.save(request);
+        SendFriendResponse friendResponse = mapper.toDto(saved);
+        realTimeService.sendFriendRequestUpdate(otherId,friendResponse);
     }
 
     @Transactional
     public void rejectRequest(String token, Long otherId) throws Exception {
-        if(token==null||token.isBlank()){
+        if (token == null || token.isBlank()) {
             throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
         }
-        String jwt=token.substring(7);
-        SignedJWT signedJWT=SignedJWT.parse(jwt);
-        if(!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))){
+        String jwt = token.substring(7);
+        SignedJWT signedJWT = SignedJWT.parse(jwt);
+        if (!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))) {
             throw new AppException(ErrorCode.TOKEN_INVALID);
         }
-        Date expire=signedJWT.getJWTClaimsSet().getExpirationTime();
-        if(expire.before(new Date())){
+        Date expire = signedJWT.getJWTClaimsSet().getExpirationTime();
+        if (expire.before(new Date())) {
             throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
-        Long meId=Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
+        Long meId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
 
         FriendRequest request = repository
                 .findBySenderIdAndReceiverIdAndStatus(
@@ -270,7 +272,6 @@ public class FriendRequestService {
         request.setStatus(StatusRequest.REJECTED);
         repository.save(request);
     }
-
 
 
 }

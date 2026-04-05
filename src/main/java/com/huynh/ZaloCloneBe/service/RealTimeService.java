@@ -1,6 +1,6 @@
 package com.huynh.ZaloCloneBe.service;
 
-import com.huynh.ZaloCloneBe.repository.MessageRepository;
+
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -23,6 +23,9 @@ public class RealTimeService {
 
     public void sendNotification(Long receiverId,Object data){
         messaging.convertAndSend("/topic/notification/"+receiverId,data);
+    }
+    public void sendFriendRequestUpdate(Long userId,Object data){
+        messaging.convertAndSend("/topic/friend-request/"+userId,data);
     }
 
     @Transactional

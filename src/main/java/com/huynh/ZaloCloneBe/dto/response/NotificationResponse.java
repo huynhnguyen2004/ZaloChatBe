@@ -15,10 +15,14 @@ public class NotificationResponse {
     private String senderFirstName;
     private String senderLastName;
     private String senderPhone;
+    private String senderAvatarUrl;
+    private Boolean senderOnline;
     private Long receiverId;
     private String receiverFirstName;
     private String receiverLastName;
     private String receiverPhone;
+    private String receiverAvatarUrl;
+    private Boolean receiverOnline;
     private String type;
     private Long targetId;
     private Boolean isRead;
