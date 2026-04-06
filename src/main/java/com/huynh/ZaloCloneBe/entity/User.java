@@ -18,7 +18,9 @@ import java.util.List;
 @Table(
         name = "users",
         indexes = {
-                @Index(name="idx_users_phone",columnList = "phone",unique = true)
+                @Index(name="idx_users_phone",columnList = "phone",unique = true),
+                @Index(name="idx_users_name",columnList = "lastname"),
+
         }
 
 )

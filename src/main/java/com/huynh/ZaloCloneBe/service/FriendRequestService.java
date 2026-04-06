@@ -15,7 +15,6 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -44,7 +43,7 @@ public class FriendRequestService {
     @Autowired
     private NotificationRepository notificationRepository;
 
-    public PageResponse<SendFriendResponse> getAllSendFriend(String token, int size, Long lastId) throws Exception {
+    public List<SendFriendResponse> getAllSendFriend(String token, int size, Long lastId) throws Exception {
         if (token == null || token.isBlank()) {
             throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
         }
@@ -59,20 +58,12 @@ public class FriendRequestService {
         }
         Long userId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
         Pageable pageable = PageRequest.of(0, size);
-        Page<FriendRequest> requests = repository.findByReceiverIdAndStatus(userId, StatusRequest.PENDING, lastId, pageable);
+        List<FriendRequest> requests = repository.findByReceiverIdAndStatus(userId, StatusRequest.PENDING, lastId, pageable);
         List<SendFriendResponse> responses = new ArrayList<>();
-        for (FriendRequest friendRequest : requests.getContent()) {
+        for (FriendRequest friendRequest : requests) {
             responses.add(mapper.toDto(friendRequest));
         }
-        return PageResponse.<SendFriendResponse>builder()
-                .content(responses)
-                .page(requests.getNumber())
-                .size(requests.getSize())
-                .totalElements(requests.getTotalElements())
-                .totalPages(requests.getTotalPages())
-                .first(lastId == null)
-                .last(responses.size() < size)
-                .build();
+        return responses;
     }
 
     @Transactional
@@ -100,9 +91,7 @@ public class FriendRequestService {
         if (repository.existsBySenderIdAndReceiverIdAndStatus(senderId, receiverId, StatusRequest.PENDING)) {
             throw new AppException(ErrorCode.REQUEST_ALREADY_SENT);
         }
-        if (repository.existsBySenderIdAndReceiverIdAndStatus(senderId, receiverId, StatusRequest.PENDING)) {
-            throw new AppException(ErrorCode.REQUEST_ALREADY_SENT);
-        }
+
 
 
         User sender = userRepository.findById(senderId)

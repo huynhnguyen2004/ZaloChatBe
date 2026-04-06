@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 
 
 @RestController
@@ -40,12 +41,12 @@ public class FriendRequestController {
 
     @GetMapping
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ApiResponse<PageResponse<SendFriendResponse>>getAllFriendRequest(@RequestHeader("Authorization") String token,
-                                                                                @RequestParam(defaultValue = "10") int size,
-                                                                                @RequestParam(required = false)Long lastId
+    public ApiResponse<List<SendFriendResponse>>getAllFriendRequest(@RequestHeader("Authorization") String token,
+                                                                    @RequestParam(defaultValue = "10") int size,
+                                                                    @RequestParam(required = false)Long lastId
     )
     throws Exception{
-        return ApiResponse.<PageResponse<SendFriendResponse>>builder()
+        return ApiResponse.<List<SendFriendResponse>>builder()
                 .status(200)
                 .message("Lay danh sach gui loi moi thanh cong")
                 .result(service.getAllSendFriend(token,size,lastId))

@@ -9,6 +9,7 @@ import java.util.Date;
 @Table(name = "friends",
         indexes = {
                 @Index(name = "idx_fr", columnList = "user1_id,user2_id")
+
         })
 @Data
 @NoArgsConstructor

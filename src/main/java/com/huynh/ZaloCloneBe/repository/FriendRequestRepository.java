@@ -2,7 +2,6 @@ package com.huynh.ZaloCloneBe.repository;
 
 import com.huynh.ZaloCloneBe.entity.FriendRequest;
 import com.huynh.ZaloCloneBe.entity.StatusRequest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -22,9 +21,9 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
     where f.receiver.id=:receiverId 
      and f.status=:status 
      AND (:lastId IS NULL OR f.id < :lastId)
-    order by f.createdAt desc
+    order by f.id desc
 """)
-    Page<FriendRequest> findByReceiverIdAndStatus(@Param("receiverId") Long receiverId,@Param("status") StatusRequest status,@Param("lastId")Long lastId, Pageable pageable);
+    List<FriendRequest> findByReceiverIdAndStatus(@Param("receiverId") Long receiverId,@Param("status") StatusRequest status,@Param("lastId")Long lastId, Pageable pageable);
 
     List<FriendRequest> findBySenderIdAndStatus(Long senderId, StatusRequest status);
     Optional<FriendRequest> findBySenderIdAndReceiverIdAndStatus(
