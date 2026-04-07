@@ -24,6 +24,8 @@ public class FriendService {
     private FriendRepository friendRepository;
     @Autowired
     private JwtProperties jwtProperties;
+    @Autowired
+    private RealTimeService realTimeService;
     public List<FriendResponse> getAllFriends(String token, int size,String lastName, Long lastId)throws Exception {
        if(token==null||token.isBlank()){
            throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
@@ -45,12 +47,28 @@ public class FriendService {
 
     }
     @Transactional
-   public void unFriend(Long user1Id,Long user2Id){
-        boolean isFriend= friendRepository.existsFriend(user1Id, user2Id);
+   public void unFriend(String token,Long userId) throws Exception{
+        if(token==null||token.isBlank()){
+            throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
+        }
+        String jwt=token.substring(7);
+        SignedJWT signedJWT=SignedJWT.parse(jwt);
+        if(!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))){
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+        Date expire=signedJWT.getJWTClaimsSet().getExpirationTime();
+        if(expire.before(new Date())){
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+        }
+        Long meId=Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
+        boolean isFriend= friendRepository.existsFriend(meId, userId);
         if(!isFriend){
             throw new AppException(ErrorCode.FRIEND_NOT_FOUND);
         }else{
-            friendRepository.unFriend(user1Id, user2Id);
+            friendRepository.unFriend(meId, userId);
+            FriendResponse response=new FriendResponse();
+            response.setFriendId(meId);
+            realTimeService.sendFriendUpdateRealtime(userId,response);
         }
 
     }

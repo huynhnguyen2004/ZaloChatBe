@@ -29,11 +29,12 @@ public class FriendController {
                 .build();
     }
     @DeleteMapping("/unfriend")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ApiResponse<Void> unfriend(
-            @RequestParam Long user1Id,
-            @RequestParam Long user2Id) {
+            @RequestHeader("Authorization") String token,
+            @RequestParam Long userId) throws Exception {
 
-        friendService.unFriend(user1Id, user2Id);
+        friendService.unFriend(token, userId);
         return ApiResponse.<Void>builder()
                 .status(200)
                 .message("Hủy kết bạn thành công")
