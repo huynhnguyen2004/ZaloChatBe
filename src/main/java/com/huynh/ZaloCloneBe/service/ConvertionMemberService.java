@@ -32,8 +32,8 @@ public class ConvertionMemberService {
         if(!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))){
             throw new AppException(ErrorCode.TOKEN_INVALID);
         }
-        Date expired=signedJWT.getJWTClaimsSet().getExpirationTime();
-        if(expired.before(new Date())){
+        Date expire=signedJWT.getJWTClaimsSet().getExpirationTime();
+        if(expire.before(new Date())){
             throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
         Long userId=Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());

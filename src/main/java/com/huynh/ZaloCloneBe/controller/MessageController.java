@@ -6,6 +6,7 @@ import com.huynh.ZaloCloneBe.dto.response.MessageResponse;
 import com.huynh.ZaloCloneBe.service.MessageService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,18 +17,20 @@ public class MessageController {
     @Autowired
     private MessageService service;
     @PostMapping("/send")
-    public ApiResponse<MessageResponse>sendMessage(@Valid @RequestBody MessageRequest request){
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ApiResponse<MessageResponse>sendMessage(@RequestHeader("Authorization")String token,@Valid @RequestBody MessageRequest request) throws Exception{
         return ApiResponse.<MessageResponse>builder()
                 .status(200)
                 .message("gui tin nhan thanh cong")
-                .result(service.sendMessage(request))
+                .result(service.sendMessage(token,request))
                 .build();
     }
     @GetMapping
-    public ApiResponse<List<MessageResponse>> getMessages(@RequestParam Long conversationId){
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ApiResponse<List<MessageResponse>> getMessages(@RequestHeader("Authorization") String token,@RequestParam Long conversationId) throws Exception{
         return ApiResponse.<List<MessageResponse>>builder()
                 .status(200)
-                .result(service.getMessages(conversationId))
+                .result(service.getMessages(token,conversationId))
                 .build();
     }
     @PostMapping("/read")

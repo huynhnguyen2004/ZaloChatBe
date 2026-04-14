@@ -47,5 +47,6 @@ public interface ConversationMemberRepository
             @Param("lastMessageId") Long lastMessageId,
             Pageable pageable
     );
-}
 
+    boolean existsByUserIdAndConversationId(Long userId,Long conversationId);
+}

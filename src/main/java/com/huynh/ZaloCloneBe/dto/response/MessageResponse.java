@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -12,6 +14,6 @@ public class MessageResponse {
     private Long senderId;
     private Long conversationId;
     private String content;
-    private String createdAt;
+    private Date createdAt;
     private boolean read;
 }

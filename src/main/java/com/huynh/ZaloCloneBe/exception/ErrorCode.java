@@ -50,6 +50,8 @@ public enum ErrorCode {
     //Search
     SEARCH_INVALID(401,"SEARCH_INVALID","TÌm kiếm không hợp lệ"),
 
+    //Conver
+    CONVERSATION_FORBIDEN(403,"CONVERSATION_FORBIDEN","Bạn không thuộc conversation này "),
     // ================= OTP =================
     OTP_COOLDOWN(429, "OTP_COOLDOWN", "Vui lòng gửi lại OTP sau 60 giây"),
     OTP_EXPIRED(400, "OTP_EXPIRED", "OTP đã hết hạn"),

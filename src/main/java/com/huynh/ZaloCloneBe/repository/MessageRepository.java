@@ -1,5 +1,6 @@
 package com.huynh.ZaloCloneBe.repository;
 
+import com.huynh.ZaloCloneBe.dto.response.MessageResponse;
 import com.huynh.ZaloCloneBe.entity.Message;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -13,13 +14,19 @@ import java.util.Optional;
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
     @Query("""
-            SELECT m
-            FROM Message m
-            JOIN FETCH m.sender
-            WHERE m.conversation.id = :conversationId
-            ORDER BY m.createdAt ASC
-            """)
-    List<Message> findMessages(Long conversationId);
+    SELECT new com.huynh.ZaloCloneBe.dto.response.MessageResponse(
+        m.id,
+        m.sender.id,
+        m.conversation.id,
+        m.content,
+        m.createdAt,
+        m.isRead
+    )
+    FROM Message m
+    WHERE m.conversation.id = :conversationId
+    ORDER BY m.createdAt ASC
+""")
+    List<MessageResponse> getMessage(Long conversationId);
     @Query("""
     SELECT MAX(m.id)
     FROM Message m

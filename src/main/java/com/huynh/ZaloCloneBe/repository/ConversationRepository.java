@@ -1,5 +1,6 @@
 package com.huynh.ZaloCloneBe.repository;
 
+import com.huynh.ZaloCloneBe.dto.response.ConversationResponse;
 import com.huynh.ZaloCloneBe.entity.Conversation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,15 +13,17 @@ public interface ConversationRepository extends JpaRepository<Conversation,Long>
     @Query("""
         SELECT c
         FROM Conversation c
-        JOIN c.members m1
-        JOIN c.members m2
+        JOIN  c.members m
         WHERE c.type = 'PRIVATE'
-          AND m1.user.id = :userA
-          AND m2.user.id = :userB
+            and m.user.id in (:user1Id,:user2Id)
+        group by c.id,c.type,c.createdAt,c.lastMessageId
+        having count(distinct  m.user.id)=2
+ 
+          
     """)
     Optional<Conversation> findPrivateConversation(
-            @Param("userA") Long userA,
-            @Param("userB") Long userB
+            @Param("user1Id") Long user1Id,
+            @Param("user2Id") Long user2Id
     );
 
 

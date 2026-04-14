@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class MessageRequest {
-    private Long senderId;
     private Long receiverId;
     @NotBlank(message = "CONTENT_REQUIRED")
     private String content;
