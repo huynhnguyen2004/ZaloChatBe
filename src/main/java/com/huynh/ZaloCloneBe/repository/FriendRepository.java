@@ -2,8 +2,6 @@ package com.huynh.ZaloCloneBe.repository;
 
 import com.huynh.ZaloCloneBe.dto.response.FriendResponse;
 import com.huynh.ZaloCloneBe.entity.Friend;
-import jakarta.transaction.Transactional;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

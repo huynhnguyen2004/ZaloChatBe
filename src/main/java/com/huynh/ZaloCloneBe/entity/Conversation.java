@@ -21,5 +21,6 @@ public class Conversation {
     private Date createdAt;
     @OneToMany(mappedBy = "conversation")
     private Set<ConversationMember> members;
+    private Long lastMessageId;
 
 }

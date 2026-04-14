@@ -10,6 +10,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Table(
+        indexes = {
+                @Index(name = "idx_user", columnList = "user_id"),
+                @Index(name="idx_conversation_user",columnList = "conversation_id,user_id")
+
+
+        }
+)
 public class ConversationMember {
     @EmbeddedId
     private ConversationMemberId id=new ConversationMemberId();
@@ -21,5 +29,5 @@ public class ConversationMember {
     @MapsId("userId")
     @JoinColumn(name="user_id")
     private User user;
-    private Long lastReadMessageId;
+
 }

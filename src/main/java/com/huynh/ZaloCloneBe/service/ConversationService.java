@@ -3,8 +3,6 @@ package com.huynh.ZaloCloneBe.service;
 import com.huynh.ZaloCloneBe.entity.Conversation;
 import com.huynh.ZaloCloneBe.entity.ConversationMember;
 import com.huynh.ZaloCloneBe.entity.User;
-import com.huynh.ZaloCloneBe.exception.AppException;
-import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import com.huynh.ZaloCloneBe.repository.ConversationMemberRepository;
 import com.huynh.ZaloCloneBe.repository.ConversationRepository;
 import com.huynh.ZaloCloneBe.repository.MessageRepository;
@@ -45,11 +43,9 @@ public class ConversationService {
         ConversationMember m1 = new ConversationMember();
         m1.setConversation(c);
         m1.setUser(u1);
-        m1.setLastReadMessageId(lastId);
         ConversationMember m2 = new ConversationMember();
         m2.setConversation(c);
         m2.setUser(u2);
-        m2.setLastReadMessageId(lastId);
         memberRepository.save(m1);
         memberRepository.save(m2);
 
