@@ -28,7 +28,7 @@ public enum ErrorCode {
     // ================= MESSAGE =================
     MESSAGE_NOT_FOUND(404, "MESSAGE_NOT_FOUND", "Không tìm thấy tin nhắn"),
     CONTENT_REQUIRED(400, "CONTENT_REQUIRED", "Nội dung không được để trống"),
-
+    INVALID_CURSOR(401,"INVALID_CURSOR","Chỉ truyền before hoặc after"),
     // ================= REQUEST =================
     REQUEST_ALREADY_SENT(400, "REQUEST_ALREADY_SENT", "Đã gửi lời mời rồi"),
     SEND_NOT_FOUND(404, "SEND_NOT_FOUND", "Không tìm thấy người gửi"),

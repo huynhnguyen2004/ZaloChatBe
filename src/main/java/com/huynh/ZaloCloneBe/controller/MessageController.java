@@ -2,6 +2,7 @@ package com.huynh.ZaloCloneBe.controller;
 
 import com.huynh.ZaloCloneBe.dto.request.MessageRequest;
 import com.huynh.ZaloCloneBe.dto.response.ApiResponse;
+import com.huynh.ZaloCloneBe.dto.response.MessagePageResponse;
 import com.huynh.ZaloCloneBe.dto.response.MessageResponse;
 import com.huynh.ZaloCloneBe.service.MessageService;
 import jakarta.validation.Valid;
@@ -27,10 +28,11 @@ public class MessageController {
     }
     @GetMapping
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ApiResponse<List<MessageResponse>> getMessages(@RequestHeader("Authorization") String token,@RequestParam Long conversationId) throws Exception{
-        return ApiResponse.<List<MessageResponse>>builder()
+    public ApiResponse<MessagePageResponse> getMessages(@RequestHeader("Authorization") String token, @RequestParam Long conversationId, @RequestParam(required = false) Long before, @RequestParam(required = false) Long after, @RequestParam(defaultValue = "20") int size) throws Exception{
+        return ApiResponse.<MessagePageResponse>builder()
                 .status(200)
-                .result(service.getMessages(token,conversationId))
+                .message("Lấy message thành công")
+                .result(service.getMessages(token,conversationId,before,after,size))
                 .build();
     }
     @PostMapping("/read")
