@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/message")
@@ -36,9 +36,14 @@ public class MessageController {
                 .build();
     }
     @PostMapping("/read")
-    public void markAsRead(@RequestParam Long conversationId,
-                           @RequestParam Long userId) {
-        service.markAsRead(conversationId, userId);
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ApiResponse<Void> markAsRead(@RequestHeader("Authorization")String token,@RequestParam Long conversationId
+                           ) throws Exception {
+        service.markAsRead(token,conversationId);
+        return ApiResponse.<Void>builder()
+                .status(200)
+                .message("Đã xem thành công")
+                .build();
     }
 
 

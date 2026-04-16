@@ -137,8 +137,25 @@ public class MessageService {
                 .build();
     }
 
-    @Transactional
-    public void markAsRead(Long conversationId, Long userId) {
+
+    public void markAsRead(String token,Long conversationId) throws Exception{
+
+        if (token == null || token.isBlank()) {
+            throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
+        }
+        String jwt = token.substring(7);
+        SignedJWT signedJWT = SignedJWT.parse(jwt);
+        if (!signedJWT.verify(new MACVerifier(jwtProperties.getSecret()))) {
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+        Date expire = signedJWT.getJWTClaimsSet().getExpirationTime();
+        if (expire.before(new Date())) {
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+        }
+        Long userId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
+        if (!conversationMemberRepository.existsByUserIdAndConversationId(userId, conversationId)) {
+            throw new AppException(ErrorCode.CONVERSATION_FORBIDEN);
+        }
 
         repository.markMessagesAsRead(conversationId, userId);
         realTimeService.markAsRead(conversationId, userId);
