@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
+
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
@@ -20,10 +20,12 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
         m.sender.id,
         m.conversation.id,
         m.content,
+        r.type,
         m.createdAt,
         m.isRead
     )
     FROM Message m
+    left join ReactMessage r on m.id=r.message.id
     WHERE m.conversation.id = :conversationId
     ORDER BY m.id desc
 """)
@@ -34,10 +36,12 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
         m.sender.id,
         m.conversation.id,
         m.content,
+        r.type,
         m.createdAt,
         m.isRead
     )
     FROM Message m
+    left join ReactMessage  r on m.id=r.message.id
     WHERE m.conversation.id = :conversationId
     and m.id>:after
     ORDER BY m.id asc
@@ -49,21 +53,17 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
         m.sender.id,
         m.conversation.id,
         m.content,
+        r.type,
         m.createdAt,
         m.isRead
     )
     FROM Message m
+    left join ReactMessage  r on m.id=r.message.id
     WHERE m.conversation.id = :conversationId
     and m.id<:before
     ORDER BY m.id desc
 """)
     List<MessageResponse> getOldMessage(@Param("conversationId") Long conversationId,@Param("before")Long before, Pageable pageable);
-    @Query("""
-    SELECT MAX(m.id)
-    FROM Message m
-    WHERE m.conversation.id = :conversationId
-""")
-    Optional<Long> getLastIdMessage(@Param("conversationId") Long conversationId);
     @Modifying
     @Query("""
     UPDATE Message m
@@ -77,7 +77,6 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             @Param("userId") Long userId
     );
 
-    Optional<Message> findTopByConversation_IdOrderByCreatedAtDesc(Long conversationId);
 
 
 

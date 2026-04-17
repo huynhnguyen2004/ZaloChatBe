@@ -21,6 +21,7 @@ public class Message {
     @JoinColumn(name = "sender_id")
     private User sender;
     private String content;
+
     private Date createdAt;
     private boolean isRead;
     @ManyToOne

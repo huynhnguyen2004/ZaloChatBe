@@ -4,16 +4,11 @@ import com.huynh.ZaloCloneBe.config.JwtProperties;
 import com.huynh.ZaloCloneBe.dto.request.MessageRequest;
 import com.huynh.ZaloCloneBe.dto.response.MessagePageResponse;
 import com.huynh.ZaloCloneBe.dto.response.MessageResponse;
-import com.huynh.ZaloCloneBe.entity.Conversation;
-import com.huynh.ZaloCloneBe.entity.Message;
-import com.huynh.ZaloCloneBe.entity.User;
+import com.huynh.ZaloCloneBe.entity.*;
 import com.huynh.ZaloCloneBe.exception.AppException;
 import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import com.huynh.ZaloCloneBe.mapper.MessageMapper;
-import com.huynh.ZaloCloneBe.repository.ConversationMemberRepository;
-import com.huynh.ZaloCloneBe.repository.ConversationRepository;
-import com.huynh.ZaloCloneBe.repository.MessageRepository;
-import com.huynh.ZaloCloneBe.repository.UserRepository;
+import com.huynh.ZaloCloneBe.repository.*;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.transaction.Transactional;
@@ -78,7 +73,9 @@ public class MessageService {
         message.setCreatedAt(new Date());
 
 
+
         Message saved = repository.save(message);
+
         conversation.setLastMessageId(saved.getId());
         conversationRepository.save(conversation);
 
@@ -138,6 +135,7 @@ public class MessageService {
     }
 
 
+    @Transactional
     public void markAsRead(String token,Long conversationId) throws Exception{
 
         if (token == null || token.isBlank()) {
