@@ -1,11 +1,11 @@
 package com.huynh.ZaloCloneBe.dto.response;
 
-import com.huynh.ZaloCloneBe.entity.ReactType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,7 +15,7 @@ public class MessageResponse {
     private Long senderId;
     private Long conversationId;
     private String content;
-    private ReactType react;
+    private List<ReactResponse> reacts;
     private Date createdAt;
     private boolean read;
 }

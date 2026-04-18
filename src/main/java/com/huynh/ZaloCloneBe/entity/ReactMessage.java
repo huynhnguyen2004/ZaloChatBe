@@ -22,8 +22,9 @@ public class ReactMessage {
     private Message message;
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
-    @Enumerated(EnumType.STRING)
+    private User sender;
+    @ManyToOne
+    @JoinColumn(name = "react_type_id")
     private ReactType type;
     private Date createdAt;
 }

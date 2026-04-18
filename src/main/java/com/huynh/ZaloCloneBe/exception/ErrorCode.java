@@ -29,6 +29,7 @@ public enum ErrorCode {
     MESSAGE_NOT_FOUND(404, "MESSAGE_NOT_FOUND", "Không tìm thấy tin nhắn"),
     CONTENT_REQUIRED(400, "CONTENT_REQUIRED", "Nội dung không được để trống"),
     INVALID_CURSOR(401,"INVALID_CURSOR","Chỉ truyền before hoặc after"),
+    MESSAGE_FORBIDEN(403,"MESSAGE_FORBIDEN","Bạn không thuộc message này"),
     // ================= REQUEST =================
     REQUEST_ALREADY_SENT(400, "REQUEST_ALREADY_SENT", "Đã gửi lời mời rồi"),
     SEND_NOT_FOUND(404, "SEND_NOT_FOUND", "Không tìm thấy người gửi"),
@@ -47,6 +48,8 @@ public enum ErrorCode {
     TOKEN_NOT_FOUND(404, "TOKEN_NOT_FOUND", "Không tìm thấy token"),
     TOKEN_REVOKED(401, "TOKEN_REVOKED", "Token đã bị thu hồi"),
 
+    //react
+    REACT_NOT_FOUND(404,"REACT_NOT_FOUND","Không tìm thấy react"),
     //Search
     SEARCH_INVALID(401,"SEARCH_INVALID","TÌm kiếm không hợp lệ"),
 

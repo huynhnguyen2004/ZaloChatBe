@@ -26,6 +26,14 @@ public class MessageController {
                 .result(service.sendMessage(token,request))
                 .build();
     }
+    @PostMapping("/react")
+    public ApiResponse<MessageResponse>sendReact(@RequestHeader("Authorization")String token,@RequestParam(required = true) Long messageId,@RequestParam(required = true)Long reactTypeId) throws Exception{
+        return ApiResponse.<MessageResponse>builder()
+                .status(200)
+                .message("Thả react thành công")
+                .result(service.sendReact(token,messageId,reactTypeId))
+                .build();
+    }
     @GetMapping
     @PreAuthorize("hasRole('CUSTOMER')")
     public ApiResponse<MessagePageResponse> getMessages(@RequestHeader("Authorization") String token, @RequestParam Long conversationId, @RequestParam(required = false) Long before, @RequestParam(required = false) Long after, @RequestParam(defaultValue = "20") int size) throws Exception{
@@ -45,6 +53,7 @@ public class MessageController {
                 .message("Đã xem thành công")
                 .build();
     }
+
 
 
 

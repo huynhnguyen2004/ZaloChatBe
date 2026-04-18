@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "messages",
@@ -21,10 +22,11 @@ public class Message {
     @JoinColumn(name = "sender_id")
     private User sender;
     private String content;
-
     private Date createdAt;
     private boolean isRead;
     @ManyToOne
     @JoinColumn(name="conversation_id")
     private Conversation conversation;
+    @OneToMany(mappedBy = "message")
+    private List<ReactMessage>reactMessages;
 }
