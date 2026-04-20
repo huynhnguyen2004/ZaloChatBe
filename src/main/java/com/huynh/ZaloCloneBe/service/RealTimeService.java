@@ -21,6 +21,9 @@ public class RealTimeService {
         messaging.convertAndSend("/topic/chat/" + receiverId, data);
     }
 
+    public void sendReactToUser(Long receiverId,Object data){
+        messaging.convertAndSend("/topic/react/"+receiverId,data);
+    }
     public void sendNotification(Long receiverId,Object data){
         messaging.convertAndSend("/topic/notification/"+receiverId,data);
     }

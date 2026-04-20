@@ -19,6 +19,7 @@ public interface MessageMapper {
     @Mapping(target = "reacts",source = "reactMessages")
     @Mapping(target ="createdAt",source = "createdAt")
     MessageResponse toDto(Message message);
+    @Mapping(target="messageId",source = "message.id")
     @Mapping(target = "userId", source = "sender.id")
     @Mapping(target = "type", source = "type.name")
     ReactResponse toReactDto(ReactMessage reactMessage);

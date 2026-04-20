@@ -117,6 +117,7 @@ public class MessageService {
         Message message=repository.findById(messageId).orElseThrow(
                 ()->new AppException(ErrorCode.MESSAGE_NOT_FOUND)
         );
+        Long receiver=message.getSender().getId();
         ReactType reactType=reactTypeRepository.findById(reactTypeId).orElseThrow(
                 ()->new AppException(ErrorCode.REACT_NOT_FOUND)
         );
@@ -130,11 +131,19 @@ public class MessageService {
                     return rm;
                 });
 
+        if(reactMessage.getType()!=null &&reactMessage.getType().getId().equals(reactTypeId)){
+            reactMesageRepository.deleteReactMessage(userId,messageId);
+            Message updatedMessage = repository.findMessageWithReact(messageId);
+
+            return messageMapper.toDto(updatedMessage);
+        }
         reactMessage.setType(reactType);
 
         reactMesageRepository.save(reactMessage);
-
+        ReactResponse reactResponse=messageMapper.toReactDto(reactMessage);
+        realTimeService.sendReactToUser(receiver,reactResponse);
         Message updatedMessage = repository.findMessageWithReact(messageId);
+
         return messageMapper.toDto(updatedMessage);
 
     }

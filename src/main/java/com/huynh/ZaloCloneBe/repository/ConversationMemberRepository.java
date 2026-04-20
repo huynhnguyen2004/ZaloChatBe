@@ -49,4 +49,5 @@ public interface ConversationMemberRepository
     );
 
     boolean existsByUserIdAndConversationId(Long userId,Long conversationId);
+
 }
