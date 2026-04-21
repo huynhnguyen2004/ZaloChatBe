@@ -20,6 +20,7 @@ import java.util.List;
         indexes = {
                 @Index(name="idx_users_phone",columnList = "phone",unique = true),
                 @Index(name="idx_users_name",columnList = "lastname"),
+                @Index(name="idx_phone_password",columnList = "phone,password")
 
         }
 

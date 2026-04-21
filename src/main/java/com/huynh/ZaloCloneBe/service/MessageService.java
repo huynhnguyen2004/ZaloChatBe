@@ -92,6 +92,7 @@ public class MessageService {
         return messageMapper.toDto(saved);
     }
 
+
     @Transactional
     public MessageResponse sendReact(String token,Long messageId,Long reactTypeId) throws Exception{
         if (token == null || token.isBlank()) {
@@ -140,11 +141,12 @@ public class MessageService {
         reactMessage.setType(reactType);
 
         reactMesageRepository.save(reactMessage);
-        ReactResponse reactResponse=messageMapper.toReactDto(reactMessage);
-        realTimeService.sendReactToUser(receiver,reactResponse);
         Message updatedMessage = repository.findMessageWithReact(messageId);
+        MessageResponse response=messageMapper.toDto(updatedMessage);
+        realTimeService.sendReactToUser(receiver,response);
 
-        return messageMapper.toDto(updatedMessage);
+
+        return response;
 
     }
     public MessagePageResponse getMessages(String token, Long conversationId, Long before, Long after, int size) throws Exception {

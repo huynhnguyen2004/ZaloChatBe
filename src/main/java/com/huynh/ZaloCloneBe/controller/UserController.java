@@ -105,14 +105,15 @@ public class UserController {
     }
 
     @GetMapping("/seen")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ApiResponse<UserProfileResponse> viewUserProfile (
-            @RequestParam Long meId,
+            @RequestHeader("Authorization") String token,
             @RequestParam Long otherId
     )throws Exception {
         return ApiResponse.<UserProfileResponse>builder()
                 .status(200)
                 .message("Xem trang cá nhân")
-                .result(service.getUserProfile(meId, otherId))
+                .result(service.getUserProfile(token, otherId))
                 .build();
     }
 

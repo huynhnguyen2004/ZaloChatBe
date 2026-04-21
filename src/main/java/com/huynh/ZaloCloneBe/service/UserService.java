@@ -211,8 +211,21 @@ public class  UserService {
 
         return RelationshipStatus.NONE;
     }
-    public UserProfileResponse getUserProfile(Long meId, Long otherId) throws Exception {
+    public UserProfileResponse getUserProfile(String token, Long otherId) throws Exception {
 
+        if(token==null||token.isBlank()){
+            throw new AppException(ErrorCode.TOKEN_NOT_FOUND);
+        }
+        String jwt=token.substring(7);
+        SignedJWT signedJwt=SignedJWT.parse(jwt);
+        if(!signedJwt.verify(new MACVerifier(jwtProperties.getSecret()))){
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+        Date expiry = signedJwt.getJWTClaimsSet().getExpirationTime();
+        if (expiry.before(new Date())) {
+            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+        }
+        Long userId=Long.parseLong(signedJwt.getJWTClaimsSet().getSubject());
         String key = "user:profile:" + otherId;
 
         String cacheUser = redisTemplate.opsForValue().get(key);
@@ -244,7 +257,8 @@ public class  UserService {
             );
         }
 
-        RelationshipStatus status = getRelationshipStatus(meId, otherId);
+
+        RelationshipStatus status = getRelationshipStatus(userId, otherId);
 
         profile.setRelationshipStatus(status);
 
