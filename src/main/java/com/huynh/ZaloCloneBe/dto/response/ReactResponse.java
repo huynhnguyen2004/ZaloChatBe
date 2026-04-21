@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ReactResponse {
     private Long messageId;
-    private Long userId;
+    private String userFirstName;
+    private String userLastName;
+    private String avatarUrl;
     private String type;
 }

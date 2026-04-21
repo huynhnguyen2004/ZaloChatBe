@@ -81,10 +81,22 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             @Param("userId") Long userId
     );
 
+
+    @Query("""
+    SELECT cm.user.id
+    FROM Message m
+    JOIN ConversationMember cm 
+        ON m.conversation.id = cm.conversation.id
+    WHERE m.id = :messageId
+      AND cm.user.id <> :userId
+""")
+    List<Long>findReceiverMessage(Long userId,Long messageId);
     @Query("""
             SELECT new com.huynh.ZaloCloneBe.dto.response.ReactResponse(
                 r.message.id,
-                r.sender.id,
+                r.sender.firstname,
+                r.sender.lastname,
+                r.sender.avatarUrl,
                 r.type.name
             )
             FROM ReactMessage r

@@ -118,7 +118,7 @@ public class MessageService {
         Message message=repository.findById(messageId).orElseThrow(
                 ()->new AppException(ErrorCode.MESSAGE_NOT_FOUND)
         );
-        Long receiver=message.getSender().getId();
+
         ReactType reactType=reactTypeRepository.findById(reactTypeId).orElseThrow(
                 ()->new AppException(ErrorCode.REACT_NOT_FOUND)
         );
@@ -143,7 +143,11 @@ public class MessageService {
         reactMesageRepository.save(reactMessage);
         Message updatedMessage = repository.findMessageWithReact(messageId);
         MessageResponse response=messageMapper.toDto(updatedMessage);
-        realTimeService.sendReactToUser(receiver,response);
+        List<Long>reveiverId=repository.findReceiverMessage(userId,messageId);
+        for(Long receiver:reveiverId){
+            realTimeService.sendReactToUser(receiver,messageMapper.toReactDto(reactMessage));
+        }
+
 
 
         return response;
