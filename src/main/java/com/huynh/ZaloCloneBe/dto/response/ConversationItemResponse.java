@@ -2,7 +2,6 @@ package com.huynh.ZaloCloneBe.dto.response;
 
 
 
-import com.huynh.ZaloCloneBe.entity.TypeConversation;
 import lombok.*;
 
 import java.util.Date;
@@ -12,17 +11,16 @@ import java.util.Date;
 @NoArgsConstructor
 @Builder
 public class ConversationItemResponse {
-
     private Long conversationId;
     private String type;
-    private Long friendId;
-    private String friendName;
-    private String friendlastName;
-    private String friendAvatar;
+
+    private String displayName;
+    private String avatar;
+
     private Boolean online;
-    private String lastReadMessageContent;
-    private Boolean isReadLastContent;
-    private Long userIdLastMessage;
-    private Date lastOnline;
-    private Date createdAt;
+
+    private String lastMessage;
+    private Boolean isRead;
+    private Long lastSenderId;
+    private Date lastMessageTime;
 }
