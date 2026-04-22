@@ -2,6 +2,7 @@ package com.huynh.ZaloCloneBe.dto.response;
 
 
 
+import com.huynh.ZaloCloneBe.entity.TypeConversation;
 import lombok.*;
 
 import java.util.Date;

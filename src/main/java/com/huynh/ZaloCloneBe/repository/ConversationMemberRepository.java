@@ -18,7 +18,7 @@ public interface ConversationMemberRepository
     @Query("""
                 SELECT new com.huynh.ZaloCloneBe.dto.response.ConversationItemResponse(
                     c.id,
-                    c.type,
+                    cast(c.type as string),
                     u.id,
                     u.firstname,
                     u.lastname,

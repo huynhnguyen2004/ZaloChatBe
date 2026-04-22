@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,5 +31,8 @@ public class ConversationMember {
     @MapsId("userId")
     @JoinColumn(name="user_id")
     private User user;
+    @Enumerated(EnumType.STRING)
+    private RoleGroup role;
+    private Date joinedAt;
 
 }

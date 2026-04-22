@@ -43,6 +43,6 @@ public class User {
     private String role;
     private Boolean status;
     private Date lastOnline;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private List<RefreshToken> refreshTokens;
 }
