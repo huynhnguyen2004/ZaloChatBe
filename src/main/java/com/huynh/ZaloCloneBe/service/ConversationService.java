@@ -9,6 +9,7 @@ import com.huynh.ZaloCloneBe.exception.ErrorCode;
 import com.huynh.ZaloCloneBe.mapper.ConversationMapper;
 import com.huynh.ZaloCloneBe.repository.ConversationMemberRepository;
 import com.huynh.ZaloCloneBe.repository.ConversationRepository;
+import com.huynh.ZaloCloneBe.repository.FriendRepository;
 import com.huynh.ZaloCloneBe.repository.UserRepository;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.SignedJWT;
@@ -28,6 +29,8 @@ public class ConversationService {
     private ConversationMemberRepository memberRepository;
     @Autowired
     private ConversationMapper conversationMapper;
+    @Autowired
+    private FriendRepository friendRepository;
 
     @Autowired
     private JwtProperties jwtProperties;
@@ -100,6 +103,13 @@ public class ConversationService {
         if (listUser.size() != memberIds.size()) {
             throw new AppException(ErrorCode.USER_NOT_FOUND);
         }
+        for (User user : listUser) {
+            if (!user.getId().equals(userId) &&
+                    !friendRepository.existsFriend(userId, user.getId())) {
+
+                throw new AppException(ErrorCode.NOT_FRIEND);
+            }
+        }
         Conversation conversation = new Conversation();
         conversation.setType(TypeConversation.GROUP);
         conversation.setCreatedAt(new Date());
@@ -108,6 +118,7 @@ public class ConversationService {
         List<ConversationMember> members = new ArrayList<>();
 
         for (User user : listUser) {
+
             ConversationMember cm = new ConversationMember();
 
             cm.setConversation(saved);
