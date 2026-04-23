@@ -17,8 +17,11 @@ public class RealTimeService {
         messaging.convertAndSend("/topic/friend-list/" + userId, data);
     }
 
-    public void sendMessageToUser(Long receiverId, Object data) {
-        messaging.convertAndSend("/topic/chat/" + receiverId, data);
+    public void convertAndSend(Long userId, Object data) {
+        messaging.convertAndSend(
+                "/topic/chat/" + userId,
+                data
+        );
     }
 
     public void sendReactToUser(Long receiverId,Object data){

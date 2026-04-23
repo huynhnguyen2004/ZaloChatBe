@@ -21,35 +21,27 @@ public interface ConversationMemberRepository
                 cast(c.type as string),
             
                 CASE 
-                    WHEN c.type = 'PRIVATE' THEN (
-                        SELECT CONCAT(u2.firstname, ' ', u2.lastname)
-                        FROM ConversationMember cm2
-                        JOIN cm2.user u2
-                        WHERE cm2.conversation = c
-                        AND u2.id <> :userId
-                    )
+                    WHEN c.type = 'PRIVATE' THEN CONCAT(u.firstname, ' ', u.lastname)
                     ELSE c.nameGroup
                 END,
             
                 CASE 
-                    WHEN c.type = 'PRIVATE' THEN (
-                        SELECT u2.avatarUrl
-                        FROM ConversationMember cm2
-                        JOIN cm2.user u2
-                        WHERE cm2.conversation = c
-                        AND u2.id <> :userId
-                    )
+                    WHEN c.type = 'PRIVATE' THEN u.avatarUrl
                     ELSE c.avatarUrl
                 END,
             
                 CASE 
-                    WHEN c.type = 'PRIVATE' THEN (
-                        SELECT u2.online
-                        FROM ConversationMember cm2
-                        JOIN cm2.user u2
-                        WHERE cm2.conversation = c
-                        AND u2.id <> :userId
-                    )
+                    WHEN c.type = 'PRIVATE' THEN u.id
+                    ELSE null
+                END,
+            
+                CASE 
+                    WHEN c.type = 'PRIVATE' THEN u.online
+                    ELSE null
+                END,
+            
+                CASE 
+                    WHEN c.type = 'PRIVATE' THEN u.lastOnline
                     ELSE null
                 END,
             
@@ -60,19 +52,36 @@ public interface ConversationMemberRepository
             )
             FROM ConversationMember cm
             JOIN cm.conversation c
+            
+            LEFT JOIN ConversationMember other 
+                ON other.conversation = c 
+                AND other.user.id <> :userId
+            
+            LEFT JOIN other.user u
+            
             LEFT JOIN Message m ON m.id = c.lastMessageId
             
             WHERE cm.user.id = :userId
             
-            AND (:lastMessageId IS NULL OR c.lastMessageId < :lastMessageId)
+            AND (
+                c.type = 'GROUP'
+                OR c.lastMessageId IS NOT NULL
+            )
             
-            ORDER BY c.lastMessageId DESC
+            AND (
+                :lastMessageId IS NULL 
+                OR c.lastMessageId < :lastMessageId 
+                OR (c.type = 'GROUP' AND c.lastMessageId IS NULL)
+            )
+            
+            ORDER BY COALESCE(m.createdAt, c.createdAt) DESC
             """)
     List<ConversationItemResponse> getConversationList(
             Long userId,
             Long lastMessageId,
             Pageable pageable
     );
-    boolean existsByUserIdAndConversationId(Long userId,Long conversationId);
+    List<ConversationMember> findByConversationId(Long conversationId);
+    boolean existsByConversationIdAndUserId(Long conversationId,Long userId);
 
 }

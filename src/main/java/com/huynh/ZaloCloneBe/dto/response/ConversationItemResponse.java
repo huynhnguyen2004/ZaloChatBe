@@ -17,7 +17,9 @@ public class ConversationItemResponse {
     private String displayName;
     private String avatar;
 
+    private Long friendId;
     private Boolean online;
+    private Date lastOnline;
 
     private String lastMessage;
     private Boolean isRead;

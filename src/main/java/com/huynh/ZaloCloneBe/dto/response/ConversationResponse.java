@@ -1,7 +1,6 @@
 package com.huynh.ZaloCloneBe.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.huynh.ZaloCloneBe.entity.TypeConversation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

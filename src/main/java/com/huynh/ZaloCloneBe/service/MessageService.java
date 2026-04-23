@@ -63,23 +63,24 @@ public class MessageService {
         if (expire.before(new Date())) {
             throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
+        Long userId=Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
 
-        Long userId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
-        User sender = userRepository.getReferenceById(userId);
-        Conversation conversation =
-                conversationService.getOrCreatePrivateConversation(
-                        token,
-                        request.getReceiverId()
-                );
+        Conversation conversation = conversationRepository.findById(request.getConversationId())
+                .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_FOUND));
 
+        boolean isMember = conversationMemberRepository.existsByConversationIdAndUserId(
+                request.getConversationId(), userId
+        );
+
+        if (!isMember) {
+            throw new AppException(ErrorCode.NOT_IN_CONVERSATION);
+        }
 
         Message message = new Message();
-        message.setSender(sender);
+        message.setSender(userRepository.getReferenceById(userId));
         message.setConversation(conversation);
         message.setContent(request.getContent());
         message.setCreatedAt(new Date());
-
-
 
         Message saved = repository.save(message);
 
@@ -87,9 +88,21 @@ public class MessageService {
         conversationRepository.save(conversation);
 
 
-        realTimeService.sendMessageToUser(request.getReceiverId(), messageMapper.toDto(saved));
+        List<ConversationMember> members =
+                conversationMemberRepository.findByConversationId(conversation.getId());
 
-        return messageMapper.toDto(saved);
+        MessageResponse dto = messageMapper.toDto(saved);
+
+        for (ConversationMember m : members) {
+            realTimeService.convertAndSend(
+                    m.getUser().getId(),
+                    dto
+            );
+        }
+
+
+
+        return dto;
     }
 
 
@@ -167,7 +180,7 @@ public class MessageService {
             throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
         Long userId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
-        if (!conversationMemberRepository.existsByUserIdAndConversationId(userId, conversationId)) {
+        if (!conversationMemberRepository.existsByConversationIdAndUserId( conversationId,userId)) {
             throw new AppException(ErrorCode.CONVERSATION_FORBIDEN);
         }
         List<MessageResponse> response;
@@ -234,7 +247,7 @@ public class MessageService {
             throw new AppException(ErrorCode.TOKEN_EXPIRED);
         }
         Long userId = Long.parseLong(signedJWT.getJWTClaimsSet().getSubject());
-        if (!conversationMemberRepository.existsByUserIdAndConversationId(userId, conversationId)) {
+        if (!conversationMemberRepository.existsByConversationIdAndUserId( conversationId,userId)) {
             throw new AppException(ErrorCode.CONVERSATION_FORBIDEN);
         }
 

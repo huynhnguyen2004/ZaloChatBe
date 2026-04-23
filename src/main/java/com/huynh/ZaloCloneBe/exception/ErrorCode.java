@@ -54,6 +54,8 @@ public enum ErrorCode {
     SEARCH_INVALID(401,"SEARCH_INVALID","TÌm kiếm không hợp lệ"),
 
     //Conver
+    CONVERSATION_NOT_FOUND(404,"CONVERSATION_NOT_FOUND","Không có conversation này"),
+    NOT_IN_CONVERSATION(401,"NOT_IN_CONVERSATION","Không có thành viên"),
     CONVERSATION_FORBIDEN(403,"CONVERSATION_FORBIDEN","Bạn không thuộc conversation này "),
     GROUP_NAME_REQUIRED(400,"GROUP_NAME_REQUIRED","Tên nhóm không được để trống"),
     GROUP_MIN_MEMBER(401,"GROUP_MIN_MEMBER","Group phải có 2 người trở lên"),
